@@ -1,18 +1,18 @@
 import { motion } from "framer-motion";
-import { MapPin, Ruler, TreePine } from "lucide-react";
+import { Building2, Car, Home, Landmark, MapPin, TreePine } from "lucide-react";
 
-const lots = [
-  { id: 1, name: "Elkhorn Valley Ranch", location: "Montana", acres: "2,400", type: "Ranch & Grazing", price: "$3.2M", highlight: true },
-  { id: 2, name: "Red Mesa Parcels", location: "Arizona", acres: "860", type: "Development Land", price: "$1.1M", highlight: false },
-  { id: 3, name: "Cedar Creek Timberland", location: "Oregon", acres: "5,100", type: "Timberland", price: "$4.8M", highlight: false },
-  { id: 4, name: "Sage Flats Agricultural", location: "Idaho", acres: "1,750", type: "Agricultural", price: "$2.4M", highlight: false },
-  { id: 5, name: "Golden Ridge Estate", location: "Colorado", acres: "320", type: "Residential Estate", price: "$5.6M", highlight: true },
-  { id: 6, name: "Willow Basin Water Rights", location: "Wyoming", acres: "3,200", type: "Ranch & Water", price: "$3.9M", highlight: false },
+const auctions = [
+  { id: 1, name: "Quyền sử dụng đất tại TP. Cần Thơ", location: "Cần Thơ", type: "Bất động sản", area: "150 m²", price: "2.5 tỷ VNĐ", icon: Home, status: "Đang nhận hồ sơ" },
+  { id: 2, name: "Lô đất nền khu dân cư Vĩnh Long", location: "Vĩnh Long", type: "Đất nền", area: "200 m²", price: "1.8 tỷ VNĐ", icon: Landmark, status: "Sắp diễn ra" },
+  { id: 3, name: "Tài sản thi hành án - Xe ô tô", location: "An Giang", type: "Phương tiện", area: "—", price: "850 triệu VNĐ", icon: Car, status: "Đang nhận hồ sơ" },
+  { id: 4, name: "Nhà đất huyện Phong Điền", location: "Cần Thơ", type: "Nhà ở", area: "320 m²", price: "3.2 tỷ VNĐ", icon: Building2, status: "Đang nhận hồ sơ" },
+  { id: 5, name: "Đất nông nghiệp Kiên Giang", location: "Kiên Giang", type: "Đất nông nghiệp", area: "5,000 m²", price: "4.1 tỷ VNĐ", icon: TreePine, status: "Sắp diễn ra" },
+  { id: 6, name: "Quyền sử dụng đất tại Sóc Trăng", location: "Sóc Trăng", type: "Bất động sản", area: "180 m²", price: "1.5 tỷ VNĐ", icon: Home, status: "Đang nhận hồ sơ" },
 ];
 
 const FeaturedLots = () => {
   return (
-    <section id="lots" className="py-24 bg-secondary">
+    <section id="auctions" className="py-24 bg-secondary">
       <div className="container">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -20,38 +20,49 @@ const FeaturedLots = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="text-accent font-body text-sm tracking-widest uppercase">Featured Properties</span>
-          <h2 className="text-4xl md:text-5xl font-display font-700 mt-3 mb-4">Auction Lots</h2>
+          <span className="text-accent font-body text-sm tracking-widest uppercase font-semibold">Tài sản đấu giá</span>
+          <h2 className="text-3xl md:text-5xl font-display font-700 mt-3 mb-4 text-foreground">Danh Sách Đấu Giá</h2>
           <p className="text-muted-foreground max-w-xl mx-auto font-body">
-            Explore our curated selection of premium western properties available in the upcoming auction.
+            Các tài sản đang được tổ chức đấu giá công khai, minh bạch theo quy định pháp luật.
           </p>
         </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lots.map((lot, i) => (
+          {auctions.map((item, i) => (
             <motion.div
-              key={lot.id}
+              key={item.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="bg-card border border-border rounded-lg p-6 hover:border-accent/40 transition-colors group"
+              className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow group"
             >
-              <div className="flex items-start justify-between mb-4">
-                <span className="text-xs font-body tracking-wider uppercase text-muted-foreground">Lot #{lot.id}</span>
-                {lot.highlight && (
-                  <span className="text-xs font-body font-semibold px-2 py-0.5 bg-accent/10 text-accent rounded-sm">Featured</span>
-                )}
-              </div>
-              <h3 className="text-xl font-display font-600 mb-2 group-hover:text-accent transition-colors">{lot.name}</h3>
-              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground font-body mb-4">
-                <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{lot.location}</span>
-                <span className="flex items-center gap-1"><Ruler className="w-3.5 h-3.5" />{lot.acres} acres</span>
-                <span className="flex items-center gap-1"><TreePine className="w-3.5 h-3.5" />{lot.type}</span>
-              </div>
-              <div className="flex items-center justify-between pt-4 border-t border-border">
-                <span className="text-2xl font-display font-700 text-accent">{lot.price}</span>
-                <span className="text-sm font-body text-muted-foreground">Starting Bid</span>
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <item.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <span className={`text-xs font-body font-semibold px-3 py-1 rounded-full ${
+                    item.status === "Đang nhận hồ sơ" 
+                      ? "bg-green-brand/10 text-green-brand" 
+                      : "bg-gold-accent/10 text-gold-accent"
+                  }`}>
+                    {item.status}
+                  </span>
+                </div>
+                <h3 className="text-lg font-display font-600 mb-3 group-hover:text-primary transition-colors leading-snug">{item.name}</h3>
+                <div className="flex flex-wrap gap-3 text-sm text-muted-foreground font-body mb-4">
+                  <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{item.location}</span>
+                  <span className="px-2 py-0.5 bg-secondary rounded text-xs">{item.type}</span>
+                  {item.area !== "—" && <span className="text-xs">{item.area}</span>}
+                </div>
+                <div className="flex items-center justify-between pt-4 border-t border-border">
+                  <div>
+                    <span className="text-xs text-muted-foreground font-body block">Giá khởi điểm</span>
+                    <span className="text-xl font-display font-700 text-accent">{item.price}</span>
+                  </div>
+                  <a href="#" className="text-sm font-body font-semibold text-primary hover:underline">Chi tiết →</a>
+                </div>
               </div>
             </motion.div>
           ))}
