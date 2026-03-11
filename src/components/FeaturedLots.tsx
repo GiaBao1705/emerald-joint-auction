@@ -1,16 +1,25 @@
 import { motion } from "framer-motion";
 import { Building2, Car, Home, Landmark, MapPin, TreePine } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-const auctions = [
-  { id: 1, name: "Quyền sử dụng đất tại TP. Cần Thơ", location: "Cần Thơ", type: "Bất động sản", area: "150 m²", price: "2.5 tỷ VNĐ", icon: Home, status: "Đang nhận hồ sơ" },
-  { id: 2, name: "Lô đất nền khu dân cư Vĩnh Long", location: "Vĩnh Long", type: "Đất nền", area: "200 m²", price: "1.8 tỷ VNĐ", icon: Landmark, status: "Sắp diễn ra" },
-  { id: 3, name: "Tài sản thi hành án - Xe ô tô", location: "An Giang", type: "Phương tiện", area: "—", price: "850 triệu VNĐ", icon: Car, status: "Đang nhận hồ sơ" },
-  { id: 4, name: "Nhà đất huyện Phong Điền", location: "Cần Thơ", type: "Nhà ở", area: "320 m²", price: "3.2 tỷ VNĐ", icon: Building2, status: "Đang nhận hồ sơ" },
-  { id: 5, name: "Đất nông nghiệp Kiên Giang", location: "Kiên Giang", type: "Đất nông nghiệp", area: "5,000 m²", price: "4.1 tỷ VNĐ", icon: TreePine, status: "Sắp diễn ra" },
-  { id: 6, name: "Quyền sử dụng đất tại Sóc Trăng", location: "Sóc Trăng", type: "Bất động sản", area: "180 m²", price: "1.5 tỷ VNĐ", icon: Home, status: "Đang nhận hồ sơ" },
-];
+const iconMap: Record<string, any> = {
+  "Bất động sản": Home,
+  "Đất nền": Landmark,
+  "Phương tiện": Car,
+  "Nhà ở": Building2,
+  "Đất nông nghiệp": TreePine,
+};
 
 const FeaturedLots = () => {
+  const { data: properties, isLoading } = useQuery({
+    queryKey: ["properties-public"],
+    queryFn: async () => {
+      const { data } = await supabase.from("properties").select("*").eq("published", true).order("created_at", { ascending: false });
+      return data || [];
+    },
+  });
+
   return (
     <section id="auctions" className="py-24 bg-secondary">
       <div className="container">
@@ -27,46 +36,65 @@ const FeaturedLots = () => {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {auctions.map((item, i) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow group"
-            >
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <item.icon className="w-5 h-5 text-primary" />
+        {isLoading ? (
+          <p className="text-center text-muted-foreground font-body">Đang tải...</p>
+        ) : !properties?.length ? (
+          <p className="text-center text-muted-foreground font-body">Hiện chưa có tài sản đấu giá.</p>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {properties.map((item, i) => {
+              const Icon = iconMap[item.property_type || ""] || Home;
+              return (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow group"
+                >
+                  {item.image_url && (
+                    <img src={item.image_url} alt={item.name} className="w-full h-48 object-cover" />
+                  )}
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <Icon className="w-5 h-5 text-primary" />
+                      </div>
+                      <span className={`text-xs font-body font-semibold px-3 py-1 rounded-full ${
+                        item.status === "Đang nhận hồ sơ"
+                          ? "bg-green-brand/15 text-green-brand"
+                          : item.status === "Sắp diễn ra"
+                          ? "bg-accent/15 text-accent"
+                          : "bg-muted text-muted-foreground"
+                      }`}>
+                        {item.status}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-display font-600 mb-3 group-hover:text-primary transition-colors leading-snug">{item.name}</h3>
+                    <div className="flex flex-wrap gap-3 text-sm text-muted-foreground font-body mb-4">
+                      {item.location && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{item.location}</span>}
+                      {item.property_type && <span className="px-2 py-0.5 bg-secondary rounded text-xs">{item.property_type}</span>}
+                      {item.area && <span className="text-xs">{item.area}</span>}
+                    </div>
+                    {item.description && <p className="text-sm text-muted-foreground font-body mb-4 line-clamp-2">{item.description}</p>}
+                    <div className="flex items-center justify-between pt-4 border-t border-border">
+                      <div>
+                        <span className="text-xs text-muted-foreground font-body block">Giá khởi điểm</span>
+                        <span className="text-xl font-display font-700 text-accent">{item.starting_price || "Liên hệ"}</span>
+                      </div>
+                      {item.auction_date && (
+                        <span className="text-xs text-muted-foreground font-body">
+                          {new Date(item.auction_date).toLocaleDateString("vi-VN")}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <span className={`text-xs font-body font-semibold px-3 py-1 rounded-full ${
-                    item.status === "Đang nhận hồ sơ" 
-                      ? "bg-green-brand/10 text-green-brand" 
-                      : "bg-gold-accent/10 text-gold-accent"
-                  }`}>
-                    {item.status}
-                  </span>
-                </div>
-                <h3 className="text-lg font-display font-600 mb-3 group-hover:text-primary transition-colors leading-snug">{item.name}</h3>
-                <div className="flex flex-wrap gap-3 text-sm text-muted-foreground font-body mb-4">
-                  <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{item.location}</span>
-                  <span className="px-2 py-0.5 bg-secondary rounded text-xs">{item.type}</span>
-                  {item.area !== "—" && <span className="text-xs">{item.area}</span>}
-                </div>
-                <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <div>
-                    <span className="text-xs text-muted-foreground font-body block">Giá khởi điểm</span>
-                    <span className="text-xl font-display font-700 text-accent">{item.price}</span>
-                  </div>
-                  <a href="#" className="text-sm font-body font-semibold text-primary hover:underline">Chi tiết →</a>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );
