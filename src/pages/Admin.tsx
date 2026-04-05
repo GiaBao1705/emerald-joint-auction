@@ -32,7 +32,7 @@ const Admin = () => {
     const [a, p, v] = await Promise.all([
       supabase.from("articles").select("*").order("created_at", { ascending: false }),
       supabase.from("properties").select("*").order("created_at", { ascending: false }),
-      supabase.from("videos").select("*").order("created_at", { ascending: false }),
+      (supabase.from as any)("videos").select("*").order("created_at", { ascending: false }),
     ]);
     setArticles(a.data || []);
     setProperties(p.data || []);
@@ -96,8 +96,8 @@ const Admin = () => {
       else await supabase.from("properties").insert(payload);
     } else {
       const payload = { title: formData.title, description: formData.description, video_url: videoUrl, thumbnail_url: thumbnailUrl, published: formData.published ?? true };
-      if (editing) await supabase.from("videos").update(payload).eq("id", editing);
-      else await supabase.from("videos").insert(payload);
+      if (editing) await (supabase.from as any)("videos").update(payload).eq("id", editing);
+      else await (supabase.from as any)("videos").insert(payload);
     }
 
     resetForm();
