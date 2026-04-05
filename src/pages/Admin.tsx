@@ -108,7 +108,7 @@ const Admin = () => {
 
   const handleDelete = async (table: string, id: string) => {
     if (!confirm("Bạn có chắc muốn xóa?")) return;
-    await supabase.from(table).delete().eq("id", id);
+    await (supabase.from as any)(table).delete().eq("id", id);
     fetchData();
   };
 
