@@ -50,6 +50,7 @@ export type Database = {
           auction_date: string | null
           created_at: string
           description: string | null
+          documents_url: string | null
           id: string
           image_url: string | null
           location: string | null
@@ -65,6 +66,7 @@ export type Database = {
           auction_date?: string | null
           created_at?: string
           description?: string | null
+          documents_url?: string | null
           id?: string
           image_url?: string | null
           location?: string | null
@@ -80,6 +82,7 @@ export type Database = {
           auction_date?: string | null
           created_at?: string
           description?: string | null
+          documents_url?: string | null
           id?: string
           image_url?: string | null
           location?: string | null
@@ -89,6 +92,39 @@ export type Database = {
           starting_price?: string | null
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      videos: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          published: boolean
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          published?: boolean
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          published?: boolean
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }
