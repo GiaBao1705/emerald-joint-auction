@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Plus, LogOut, FileText, Building2, Video, Trash2, Pencil } from "lucide-react";
+import { Plus, LogOut, FileText, Building2, Video, Trash2, Pencil, Settings, Save } from "lucide-react";
 
-type Tab = "articles" | "properties" | "videos";
+type Tab = "articles" | "properties" | "videos" | "settings";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -11,6 +11,8 @@ const Admin = () => {
   const [articles, setArticles] = useState<any[]>([]);
   const [properties, setProperties] = useState<any[]>([]);
   const [videos, setVideos] = useState<any[]>([]);
+  const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
+  const [savingSettings, setSavingSettings] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const [showForm, setShowForm] = useState(false);
@@ -29,14 +31,18 @@ const Admin = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const [a, p, v] = await Promise.all([
+    const [a, p, v, s] = await Promise.all([
       supabase.from("articles").select("*").order("created_at", { ascending: false }),
       supabase.from("properties").select("*").order("created_at", { ascending: false }),
       (supabase.from as any)("videos").select("*").order("created_at", { ascending: false }),
+      (supabase.from as any)("site_settings").select("*"),
     ]);
     setArticles(a.data || []);
     setProperties(p.data || []);
     setVideos(v.data || []);
+    const map: Record<string, string> = {};
+    (s.data || []).forEach((item: any) => { map[item.key] = item.value || ""; });
+    setSiteSettings(map);
     setLoading(false);
   };
 
@@ -117,10 +123,20 @@ const Admin = () => {
   const inputClass = "w-full px-3 py-2.5 bg-card border border-border rounded-md text-foreground font-body text-sm focus:outline-none focus:ring-2 focus:ring-primary";
   const labelClass = "block text-sm font-body font-medium text-foreground/70 mb-1";
 
+  const handleSaveSettings = async () => {
+    setSavingSettings(true);
+    for (const [key, value] of Object.entries(siteSettings)) {
+      await (supabase.from as any)("site_settings").update({ value }).eq("key", key);
+    }
+    setSavingSettings(false);
+    alert("Đã lưu cài đặt!");
+  };
+
   const tabLabels: { key: Tab; icon: any; label: string }[] = [
     { key: "articles", icon: FileText, label: "Bài viết" },
     { key: "properties", icon: Building2, label: "Tài sản đấu giá" },
     { key: "videos", icon: Video, label: "Video" },
+    { key: "settings", icon: Settings, label: "Cài đặt" },
   ];
 
   return (
@@ -145,10 +161,12 @@ const Admin = () => {
           ))}
         </div>
 
-        <button onClick={() => { setShowForm(true); setEditing(null); setFormData({}); }}
-          className="flex items-center gap-2 px-5 py-2.5 mb-6 bg-accent text-accent-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity">
-          <Plus className="w-4 h-4" /> Thêm {tab === "articles" ? "bài viết" : tab === "properties" ? "tài sản" : "video"}
-        </button>
+        {tab !== "settings" && (
+          <button onClick={() => { setShowForm(true); setEditing(null); setFormData({}); }}
+            className="flex items-center gap-2 px-5 py-2.5 mb-6 bg-accent text-accent-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity">
+            <Plus className="w-4 h-4" /> Thêm {tab === "articles" ? "bài viết" : tab === "properties" ? "tài sản" : "video"}
+          </button>
+        )}
 
         {/* Form */}
         {showForm && (
@@ -267,6 +285,43 @@ const Admin = () => {
                   </div>
                 </div>
               ))
+            )}
+
+            {tab === "settings" && (
+              <div className="bg-card border border-border rounded-lg p-6 space-y-4">
+                <h2 className="font-display font-600 text-lg mb-2">Cài đặt thông tin trang</h2>
+                {[
+                  { key: "company_name", label: "Tên công ty" },
+                  { key: "company_description", label: "Mô tả công ty" },
+                  { key: "phone", label: "Số điện thoại" },
+                  { key: "email", label: "Email" },
+                  { key: "address", label: "Địa chỉ" },
+                ].map(({ key, label }) => (
+                  <div key={key}>
+                    <label className={labelClass}>{label}</label>
+                    {key === "company_description" ? (
+                      <textarea
+                        value={siteSettings[key] || ""}
+                        onChange={e => setSiteSettings({ ...siteSettings, [key]: e.target.value })}
+                        className={inputClass + " min-h-[80px]"}
+                      />
+                    ) : (
+                      <input
+                        value={siteSettings[key] || ""}
+                        onChange={e => setSiteSettings({ ...siteSettings, [key]: e.target.value })}
+                        className={inputClass}
+                      />
+                    )}
+                  </div>
+                ))}
+                <button
+                  onClick={handleSaveSettings}
+                  disabled={savingSettings}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground font-body font-semibold rounded-md text-sm hover:opacity-90 disabled:opacity-50"
+                >
+                  <Save className="w-4 h-4" /> {savingSettings ? "Đang lưu..." : "Lưu cài đặt"}
+                </button>
+              </div>
             )}
           </div>
         )}

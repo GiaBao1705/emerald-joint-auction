@@ -11,11 +11,9 @@ const Navbar = () => {
           <a href="#about" className="text-foreground/70 hover:text-primary transition-colors">Giới thiệu</a>
           <a href="#services" className="text-foreground/70 hover:text-primary transition-colors">Dịch vụ</a>
           <a href="#auctions" className="text-foreground/70 hover:text-primary transition-colors">Đấu giá</a>
+          <a href="#videos" className="text-foreground/70 hover:text-primary transition-colors">Video</a>
           <a href="#process" className="text-foreground/70 hover:text-primary transition-colors">Quy trình</a>
           <a href="#contact" className="text-foreground/70 hover:text-primary transition-colors">Liên hệ</a>
-          <a href="#" className="px-5 py-2.5 bg-accent text-accent-foreground font-semibold rounded-md hover:opacity-90 transition-opacity text-sm">
-            Đăng ký đấu giá
-          </a>
         </div>
       </div>
     </nav>
