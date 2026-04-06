@@ -161,10 +161,12 @@ const Admin = () => {
           ))}
         </div>
 
-        <button onClick={() => { setShowForm(true); setEditing(null); setFormData({}); }}
-          className="flex items-center gap-2 px-5 py-2.5 mb-6 bg-accent text-accent-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity">
-          <Plus className="w-4 h-4" /> Thêm {tab === "articles" ? "bài viết" : tab === "properties" ? "tài sản" : "video"}
-        </button>
+        {tab !== "settings" && (
+          <button onClick={() => { setShowForm(true); setEditing(null); setFormData({}); }}
+            className="flex items-center gap-2 px-5 py-2.5 mb-6 bg-accent text-accent-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity">
+            <Plus className="w-4 h-4" /> Thêm {tab === "articles" ? "bài viết" : tab === "properties" ? "tài sản" : "video"}
+          </button>
+        )}
 
         {/* Form */}
         {showForm && (
@@ -283,6 +285,43 @@ const Admin = () => {
                   </div>
                 </div>
               ))
+            )}
+
+            {tab === "settings" && (
+              <div className="bg-card border border-border rounded-lg p-6 space-y-4">
+                <h2 className="font-display font-600 text-lg mb-2">Cài đặt thông tin trang</h2>
+                {[
+                  { key: "company_name", label: "Tên công ty" },
+                  { key: "company_description", label: "Mô tả công ty" },
+                  { key: "phone", label: "Số điện thoại" },
+                  { key: "email", label: "Email" },
+                  { key: "address", label: "Địa chỉ" },
+                ].map(({ key, label }) => (
+                  <div key={key}>
+                    <label className={labelClass}>{label}</label>
+                    {key === "company_description" ? (
+                      <textarea
+                        value={siteSettings[key] || ""}
+                        onChange={e => setSiteSettings({ ...siteSettings, [key]: e.target.value })}
+                        className={inputClass + " min-h-[80px]"}
+                      />
+                    ) : (
+                      <input
+                        value={siteSettings[key] || ""}
+                        onChange={e => setSiteSettings({ ...siteSettings, [key]: e.target.value })}
+                        className={inputClass}
+                      />
+                    )}
+                  </div>
+                ))}
+                <button
+                  onClick={handleSaveSettings}
+                  disabled={savingSettings}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground font-body font-semibold rounded-md text-sm hover:opacity-90 disabled:opacity-50"
+                >
+                  <Save className="w-4 h-4" /> {savingSettings ? "Đang lưu..." : "Lưu cài đặt"}
+                </button>
+              </div>
             )}
           </div>
         )}
