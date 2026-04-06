@@ -45,13 +45,14 @@ const FeaturedLots = () => {
             {properties.map((item, i) => {
               const Icon = iconMap[item.property_type || ""] || Home;
               return (
-                <motion.div
+                <motion.a
+                  href={`/property/${item.id}`}
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow group"
+                  className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow group block"
                 >
                   {item.image_url && (
                     <img src={item.image_url} alt={item.name} className="w-full h-48 object-cover" />
@@ -90,7 +91,7 @@ const FeaturedLots = () => {
                       )}
                     </div>
                   </div>
-                </motion.div>
+                </motion.a>
               );
             })}
           </div>
