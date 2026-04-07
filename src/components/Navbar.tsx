@@ -31,17 +31,26 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-b border-border shadow-sm">
       <div className="container flex items-center justify-between h-20">
-        <a href="/" className="flex items-center gap-3 shrink-0">
+        {/* Logo */}
+        <a href="/" className="flex items-center shrink-0">
           <img src={logo} alt="Đấu Giá Hợp Danh Miền Tây" className="h-14 w-auto" />
         </a>
-        <div className="hidden md:flex items-center gap-5 font-body text-sm font-medium">
+
+        {/* Desktop nav - centered */}
+        <div className="hidden md:flex items-center gap-5 font-body text-sm font-medium flex-1 justify-center">
           {links.map(l => (
             <a key={l.href} href={l.href} className="text-foreground/70 hover:text-primary transition-colors whitespace-nowrap">{l.label}</a>
           ))}
+        </div>
+
+        {/* Search button */}
+        <div className="hidden md:flex items-center shrink-0">
           <button onClick={() => setSearchOpen(!searchOpen)} className="p-2 text-foreground/70 hover:text-primary transition-colors">
             <Search className="w-4 h-4" />
           </button>
         </div>
+
+        {/* Mobile toggle */}
         <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 text-foreground/70">
           {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
