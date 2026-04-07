@@ -7,6 +7,7 @@ import Index from "./pages/Index.tsx";
 import Login from "./pages/Login.tsx";
 import Admin from "./pages/Admin.tsx";
 import PropertyDetail from "./pages/PropertyDetail.tsx";
+import Recruitment from "./pages/Recruitment.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/property/:id" element={<PropertyDetail />} />
+          <Route path="/recruitment" element={<Recruitment />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
