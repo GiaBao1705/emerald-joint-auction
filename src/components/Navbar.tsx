@@ -1,21 +1,74 @@
+import { useState } from "react";
+import { Search, Menu, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import logo from "@/assets/logo.png";
 
 const Navbar = () => {
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchOpen(false);
+      setSearchQuery("");
+    }
+  };
+
+  const links = [
+    { href: "#about", label: "Giới thiệu" },
+    { href: "#auctions", label: "Đấu giá" },
+    { href: "#videos", label: "Video" },
+    { href: "#services", label: "Dịch vụ" },
+    { href: "#process", label: "Quy trình" },
+    { href: "/recruitment", label: "Tuyển dụng" },
+    { href: "#contact", label: "Liên hệ" },
+  ];
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-b border-border shadow-sm">
       <div className="container flex items-center justify-between h-20">
-        <a href="/" className="flex items-center gap-3">
+        <a href="/" className="flex items-center gap-3 shrink-0">
           <img src={logo} alt="Đấu Giá Hợp Danh Miền Tây" className="h-14 w-auto" />
         </a>
-        <div className="hidden md:flex items-center gap-6 font-body text-sm font-medium">
-          <a href="#about" className="text-foreground/70 hover:text-primary transition-colors">Giới thiệu</a>
-          <a href="#services" className="text-foreground/70 hover:text-primary transition-colors">Dịch vụ</a>
-          <a href="#auctions" className="text-foreground/70 hover:text-primary transition-colors">Đấu giá</a>
-          <a href="#videos" className="text-foreground/70 hover:text-primary transition-colors">Video</a>
-          <a href="#process" className="text-foreground/70 hover:text-primary transition-colors">Quy trình</a>
-          <a href="#contact" className="text-foreground/70 hover:text-primary transition-colors">Liên hệ</a>
+        <div className="hidden md:flex items-center gap-5 font-body text-sm font-medium">
+          {links.map(l => (
+            <a key={l.href} href={l.href} className="text-foreground/70 hover:text-primary transition-colors whitespace-nowrap">{l.label}</a>
+          ))}
+          <button onClick={() => setSearchOpen(!searchOpen)} className="p-2 text-foreground/70 hover:text-primary transition-colors">
+            <Search className="w-4 h-4" />
+          </button>
         </div>
+        <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 text-foreground/70">
+          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
       </div>
+
+      {searchOpen && (
+        <div className="border-t border-border bg-card px-4 py-3">
+          <form onSubmit={handleSearch} className="container flex gap-2">
+            <input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Tìm kiếm tài sản đấu giá..."
+              className="flex-1 px-4 py-2 bg-secondary border border-border rounded-md text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary"
+              autoFocus
+            />
+            <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-body font-semibold">Tìm</button>
+          </form>
+        </div>
+      )}
+
+      {mobileOpen && (
+        <div className="md:hidden border-t border-border bg-card px-4 py-4 space-y-3">
+          {links.map(l => (
+            <a key={l.href} href={l.href} onClick={() => setMobileOpen(false)} className="block text-foreground/70 hover:text-primary font-body text-sm font-medium">{l.label}</a>
+          ))}
+        </div>
+      )}
     </nav>
   );
 };
