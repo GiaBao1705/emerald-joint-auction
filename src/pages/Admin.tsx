@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Plus, LogOut, FileText, Building2, Video, Trash2, Pencil, Settings, Save } from "lucide-react";
+import { Plus, LogOut, FileText, Building2, Video, Trash2, Pencil, Settings, Save, Users } from "lucide-react";
 
-type Tab = "articles" | "properties" | "videos" | "settings";
+type Tab = "articles" | "properties" | "videos" | "recruitments" | "settings";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ const Admin = () => {
   const [articles, setArticles] = useState<any[]>([]);
   const [properties, setProperties] = useState<any[]>([]);
   const [videos, setVideos] = useState<any[]>([]);
+  const [recruitments, setRecruitments] = useState<any[]>([]);
   const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
   const [savingSettings, setSavingSettings] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -31,15 +32,17 @@ const Admin = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const [a, p, v, s] = await Promise.all([
+    const [a, p, v, r, s] = await Promise.all([
       supabase.from("articles").select("*").order("created_at", { ascending: false }),
       supabase.from("properties").select("*").order("created_at", { ascending: false }),
       (supabase.from as any)("videos").select("*").order("created_at", { ascending: false }),
+      (supabase.from as any)("recruitments").select("*").order("created_at", { ascending: false }),
       (supabase.from as any)("site_settings").select("*"),
     ]);
     setArticles(a.data || []);
     setProperties(p.data || []);
     setVideos(v.data || []);
+    setRecruitments(r.data || []);
     const map: Record<string, string> = {};
     (s.data || []).forEach((item: any) => { map[item.key] = item.value || ""; });
     setSiteSettings(map);
@@ -100,10 +103,14 @@ const Admin = () => {
       };
       if (editing) await supabase.from("properties").update(payload).eq("id", editing);
       else await supabase.from("properties").insert(payload);
-    } else {
+    } else if (tab === "videos") {
       const payload = { title: formData.title, description: formData.description, video_url: videoUrl, thumbnail_url: thumbnailUrl, published: formData.published ?? true };
       if (editing) await (supabase.from as any)("videos").update(payload).eq("id", editing);
       else await (supabase.from as any)("videos").insert(payload);
+    } else if (tab === "recruitments") {
+      const payload = { title: formData.title, content: formData.content, image_url: imageUrl, published: formData.published ?? true };
+      if (editing) await (supabase.from as any)("recruitments").update(payload).eq("id", editing);
+      else await (supabase.from as any)("recruitments").insert(payload);
     }
 
     resetForm();
@@ -126,7 +133,12 @@ const Admin = () => {
   const handleSaveSettings = async () => {
     setSavingSettings(true);
     for (const [key, value] of Object.entries(siteSettings)) {
-      await (supabase.from as any)("site_settings").update({ value }).eq("key", key);
+      const { data: existing } = await (supabase.from as any)("site_settings").select("id").eq("key", key).maybeSingle();
+      if (existing) {
+        await (supabase.from as any)("site_settings").update({ value }).eq("key", key);
+      } else {
+        await (supabase.from as any)("site_settings").insert({ key, value });
+      }
     }
     setSavingSettings(false);
     alert("Đã lưu cài đặt!");
@@ -134,10 +146,19 @@ const Admin = () => {
 
   const tabLabels: { key: Tab; icon: any; label: string }[] = [
     { key: "articles", icon: FileText, label: "Bài viết" },
-    { key: "properties", icon: Building2, label: "Tài sản đấu giá" },
+    { key: "properties", icon: Building2, label: "Tài sản" },
     { key: "videos", icon: Video, label: "Video" },
+    { key: "recruitments", icon: Users, label: "Tuyển dụng" },
     { key: "settings", icon: Settings, label: "Cài đặt" },
   ];
+
+  const getTabLabel = () => {
+    if (tab === "articles") return "bài viết";
+    if (tab === "properties") return "tài sản";
+    if (tab === "videos") return "video";
+    if (tab === "recruitments") return "tin tuyển dụng";
+    return "";
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -151,8 +172,7 @@ const Admin = () => {
       </header>
 
       <div className="container py-8">
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           {tabLabels.map(t => (
             <button key={t.key} onClick={() => { setTab(t.key); setShowForm(false); }}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-md font-body text-sm font-medium transition-colors ${tab === t.key ? "bg-primary text-primary-foreground" : "bg-card text-foreground/70 hover:text-foreground border border-border"}`}>
@@ -164,15 +184,14 @@ const Admin = () => {
         {tab !== "settings" && (
           <button onClick={() => { setShowForm(true); setEditing(null); setFormData({}); }}
             className="flex items-center gap-2 px-5 py-2.5 mb-6 bg-accent text-accent-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity">
-            <Plus className="w-4 h-4" /> Thêm {tab === "articles" ? "bài viết" : tab === "properties" ? "tài sản" : "video"}
+            <Plus className="w-4 h-4" /> Thêm {getTabLabel()}
           </button>
         )}
 
-        {/* Form */}
         {showForm && (
           <div className="bg-card border border-border rounded-lg p-6 mb-6">
             <h2 className="font-display font-600 text-lg mb-5">
-              {editing ? "Sửa" : "Thêm"} {tab === "articles" ? "bài viết" : tab === "properties" ? "tài sản" : "video"}
+              {editing ? "Sửa" : "Thêm"} {getTabLabel()}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               {tab === "articles" && (
@@ -217,6 +236,15 @@ const Admin = () => {
                 </>
               )}
 
+              {tab === "recruitments" && (
+                <>
+                  <div><label className={labelClass}>Tiêu đề *</label><input value={formData.title || ""} onChange={e => setFormData({ ...formData, title: e.target.value })} className={inputClass} required /></div>
+                  <div><label className={labelClass}>Nội dung</label><textarea value={formData.content || ""} onChange={e => setFormData({ ...formData, content: e.target.value })} className={inputClass + " min-h-[120px]"} /></div>
+                  <div><label className={labelClass}>Hình ảnh</label><input type="file" accept="image/*" onChange={e => setFormData({ ...formData, imageFile: e.target.files?.[0] })} className={inputClass} />
+                    {formData.image_url && <img src={formData.image_url} alt="" className="mt-2 h-20 rounded object-cover" />}</div>
+                </>
+              )}
+
               <div className="flex items-center gap-2">
                 <input type="checkbox" checked={formData.published ?? true} onChange={e => setFormData({ ...formData, published: e.target.checked })} id="pub-check" />
                 <label htmlFor="pub-check" className="text-sm font-body text-foreground/70">Xuất bản</label>
@@ -231,7 +259,6 @@ const Admin = () => {
           </div>
         )}
 
-        {/* List */}
         {loading ? (
           <p className="text-muted-foreground font-body">Đang tải...</p>
         ) : (
@@ -287,6 +314,23 @@ const Admin = () => {
               ))
             )}
 
+            {tab === "recruitments" && (
+              recruitments.length === 0 ? <p className="text-muted-foreground font-body text-sm">Chưa có tin tuyển dụng nào.</p> :
+              recruitments.map(r => (
+                <div key={r.id} className="flex items-center gap-4 p-4 bg-card border border-border rounded-lg">
+                  {r.image_url && <img src={r.image_url} alt="" className="w-16 h-16 rounded object-cover shrink-0" />}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-body font-semibold text-sm truncate">{r.title}</h3>
+                    <p className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("vi-VN")} · {r.published ? "Đã xuất bản" : "Nháp"}</p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <button onClick={() => editItem(r)} className="p-2 bg-secondary text-foreground/70 rounded hover:text-foreground"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => handleDelete("recruitments", r.id)} className="p-2 bg-destructive/10 text-destructive rounded hover:bg-destructive/20"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                </div>
+              ))
+            )}
+
             {tab === "settings" && (
               <div className="bg-card border border-border rounded-lg p-6 space-y-4">
                 <h2 className="font-display font-600 text-lg mb-2">Cài đặt thông tin trang</h2>
@@ -295,7 +339,7 @@ const Admin = () => {
                   { key: "company_description", label: "Mô tả công ty" },
                   { key: "phone", label: "Số điện thoại" },
                   { key: "email", label: "Email" },
-                  { key: "address", label: "Địa chỉ" },
+                  { key: "website", label: "Website" },
                 ].map(({ key, label }) => (
                   <div key={key}>
                     <label className={labelClass}>{label}</label>
