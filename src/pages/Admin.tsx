@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Plus, LogOut, FileText, Building2, Video, Trash2, Pencil, Settings, Save, Users, Image } from "lucide-react";
+import { Plus, LogOut, FileText, Building2, Video, Trash2, Pencil, Settings, Save, Users, Image, Link as LinkIcon, X } from "lucide-react";
+
+const PROPERTY_CATEGORIES = ["Bất động sản", "Động sản", "Tài sản khác"];
 
 type Tab = "articles" | "properties" | "videos" | "recruitments" | "hero" | "settings";
-
-const MAX_VIDEO_SIZE = 20 * 1024 * 1024; // 20MB
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -26,7 +26,12 @@ const Admin = () => {
   // Hero video state
   const [heroVideoUrl, setHeroVideoUrl] = useState("");
   const [useVideoHero, setUseVideoHero] = useState(false);
-  const [heroUploading, setHeroUploading] = useState(false);
+  const [heroSaving, setHeroSaving] = useState(false);
+
+  // Gallery state
+  const [galleryPropertyId, setGalleryPropertyId] = useState<string | null>(null);
+  const [galleryImages, setGalleryImages] = useState<any[]>([]);
+  const [galleryUploading, setGalleryUploading] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -74,7 +79,6 @@ const Admin = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate required fields
     if (tab === "articles" && !formData.title?.trim()) { alert("Vui lòng nhập tiêu đề"); return; }
     if (tab === "properties" && !formData.name?.trim()) { alert("Vui lòng nhập tên tài sản"); return; }
     if (tab === "videos" && !formData.title?.trim()) { alert("Vui lòng nhập tiêu đề"); return; }
@@ -114,7 +118,7 @@ const Admin = () => {
     } else if (tab === "properties") {
       const payload = {
         name: formData.name?.trim(), description: formData.description?.trim() || null, location: formData.location?.trim() || null,
-        property_type: formData.property_type?.trim() || null, area: formData.area?.trim() || null, starting_price: formData.starting_price?.trim() || null,
+        property_type: formData.property_type || "Bất động sản", area: formData.area?.trim() || null, starting_price: formData.starting_price?.trim() || null,
         status: formData.status || "Đang nhận hồ sơ", image_url: imageUrl, documents_url: documentsUrl,
         published: formData.published ?? true, auction_date: formData.auction_date || null,
       };
@@ -166,23 +170,12 @@ const Admin = () => {
   };
 
   // Hero video handlers
-  const handleHeroVideoUpload = async (file: File) => {
-    if (!file.type.startsWith("video/mp4") && file.type !== "video/mp4") {
-      alert("Chỉ chấp nhận file MP4!");
-      return;
-    }
-    if (file.size > MAX_VIDEO_SIZE) {
-      alert("File quá lớn! Tối đa 20MB.");
-      return;
-    }
-    setHeroUploading(true);
-    const url = await uploadFile(file);
-    if (url) {
-      setHeroVideoUrl(url);
-      await saveSetting("hero_video_url", url);
-      alert("Đã upload video hero thành công!");
-    }
-    setHeroUploading(false);
+  const handleSaveHeroUrl = async () => {
+    setHeroSaving(true);
+    await saveSetting("hero_video_url", heroVideoUrl);
+    await saveSetting("use_video_hero", useVideoHero ? "true" : "false");
+    setHeroSaving(false);
+    alert("Đã lưu cấu hình Hero!");
   };
 
   const handleRemoveHeroVideo = async () => {
@@ -196,6 +189,39 @@ const Admin = () => {
   const handleToggleVideoHero = async (checked: boolean) => {
     setUseVideoHero(checked);
     await saveSetting("use_video_hero", checked ? "true" : "false");
+  };
+
+  // Gallery handlers
+  const openGallery = async (propertyId: string) => {
+    setGalleryPropertyId(propertyId);
+    const { data } = await (supabase.from as any)("property_images")
+      .select("*").eq("property_id", propertyId).order("display_order", { ascending: true });
+    setGalleryImages(data || []);
+  };
+
+  const handleGalleryUpload = async (files: FileList) => {
+    setGalleryUploading(true);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file.type.startsWith("image/")) continue;
+      if (file.size > 5 * 1024 * 1024) { alert(`${file.name} quá lớn (tối đa 5MB)`); continue; }
+      const url = await uploadFile(file);
+      if (url && galleryPropertyId) {
+        await (supabase.from as any)("property_images").insert({
+          property_id: galleryPropertyId,
+          image_url: url,
+          display_order: galleryImages.length + i,
+        });
+      }
+    }
+    if (galleryPropertyId) await openGallery(galleryPropertyId);
+    setGalleryUploading(false);
+  };
+
+  const handleDeleteGalleryImage = async (imageId: string) => {
+    if (!confirm("Xóa ảnh này?")) return;
+    await (supabase.from as any)("property_images").delete().eq("id", imageId);
+    if (galleryPropertyId) await openGallery(galleryPropertyId);
   };
 
   const tabLabels: { key: Tab; icon: any; label: string }[] = [
@@ -229,7 +255,7 @@ const Admin = () => {
       <div className="container py-8">
         <div className="flex flex-wrap gap-2 mb-6">
           {tabLabels.map(t => (
-            <button key={t.key} onClick={() => { setTab(t.key); setShowForm(false); }}
+            <button key={t.key} onClick={() => { setTab(t.key); setShowForm(false); setGalleryPropertyId(null); }}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-md font-body text-sm font-medium transition-colors ${tab === t.key ? "bg-primary text-primary-foreground" : "bg-card text-foreground/70 hover:text-foreground border border-border"}`}>
               <t.icon className="w-4 h-4" /> {t.label}
             </button>
@@ -237,10 +263,36 @@ const Admin = () => {
         </div>
 
         {tab !== "settings" && tab !== "hero" && (
-          <button onClick={() => { setShowForm(true); setEditing(null); setFormData({}); }}
+          <button onClick={() => { setShowForm(true); setEditing(null); setFormData({}); setGalleryPropertyId(null); }}
             className="flex items-center gap-2 px-5 py-2.5 mb-6 bg-accent text-accent-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity">
             <Plus className="w-4 h-4" /> Thêm {getTabLabel()}
           </button>
+        )}
+
+        {/* Gallery Modal */}
+        {galleryPropertyId && (
+          <div className="bg-card border border-border rounded-lg p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display font-600 text-lg">Quản lý ảnh Gallery</h2>
+              <button onClick={() => setGalleryPropertyId(null)} className="p-2 hover:bg-secondary rounded"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              {galleryImages.map(img => (
+                <div key={img.id} className="relative group">
+                  <img src={img.image_url} alt="" className="w-full h-24 object-cover rounded-md" />
+                  <button onClick={() => handleDeleteGalleryImage(img.id)}
+                    className="absolute top-1 right-1 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <label className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md font-body text-sm font-semibold cursor-pointer hover:opacity-90">
+              <Image className="w-4 h-4" /> Thêm ảnh
+              <input type="file" accept="image/*" multiple className="hidden" onChange={e => { if (e.target.files) handleGalleryUpload(e.target.files); }} />
+            </label>
+            {galleryUploading && <p className="text-sm text-primary font-body mt-2">Đang upload...</p>}
+          </div>
         )}
 
         {showForm && tab !== "hero" && (
@@ -263,7 +315,11 @@ const Admin = () => {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div><label className={labelClass}>Tên tài sản *</label><input value={formData.name || ""} onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClass} required maxLength={300} /></div>
                     <div><label className={labelClass}>Vị trí</label><input value={formData.location || ""} onChange={e => setFormData({ ...formData, location: e.target.value })} className={inputClass} maxLength={300} /></div>
-                    <div><label className={labelClass}>Loại tài sản</label><input value={formData.property_type || ""} onChange={e => setFormData({ ...formData, property_type: e.target.value })} className={inputClass} maxLength={100} /></div>
+                    <div><label className={labelClass}>Loại tài sản *</label>
+                      <select value={formData.property_type || "Bất động sản"} onChange={e => setFormData({ ...formData, property_type: e.target.value })} className={inputClass}>
+                        {PROPERTY_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                      </select>
+                    </div>
                     <div><label className={labelClass}>Diện tích</label><input value={formData.area || ""} onChange={e => setFormData({ ...formData, area: e.target.value })} className={inputClass} maxLength={100} /></div>
                     <div><label className={labelClass}>Giá khởi điểm</label><input value={formData.starting_price || ""} onChange={e => setFormData({ ...formData, starting_price: e.target.value })} className={inputClass} maxLength={100} /></div>
                     <div><label className={labelClass}>Trạng thái</label>
@@ -273,7 +329,7 @@ const Admin = () => {
                     <div><label className={labelClass}>Ngày đấu giá</label><input type="datetime-local" value={formData.auction_date ? formData.auction_date.slice(0, 16) : ""} onChange={e => setFormData({ ...formData, auction_date: e.target.value })} className={inputClass} /></div>
                   </div>
                   <div><label className={labelClass}>Mô tả</label><textarea value={formData.description || ""} onChange={e => setFormData({ ...formData, description: e.target.value })} className={inputClass + " min-h-[100px]"} maxLength={5000} /></div>
-                  <div><label className={labelClass}>Hình ảnh tài sản</label><input type="file" accept="image/*" onChange={e => setFormData({ ...formData, imageFile: e.target.files?.[0] })} className={inputClass} />
+                  <div><label className={labelClass}>Hình ảnh đại diện</label><input type="file" accept="image/*" onChange={e => setFormData({ ...formData, imageFile: e.target.files?.[0] })} className={inputClass} />
                     {formData.image_url && <img src={formData.image_url} alt="" className="mt-2 h-20 rounded object-cover" />}</div>
                   <div><label className={labelClass}>Hồ sơ tài sản (PDF, Word...)</label><input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={e => setFormData({ ...formData, documentsFile: e.target.files?.[0] })} className={inputClass} />
                     {formData.documents_url && <a href={formData.documents_url} target="_blank" rel="noreferrer" className="text-sm text-primary underline mt-1 inline-block">Xem hồ sơ hiện tại</a>}</div>
@@ -342,9 +398,10 @@ const Admin = () => {
                   {p.image_url && <img src={p.image_url} alt="" className="w-16 h-16 rounded object-cover shrink-0" />}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-body font-semibold text-sm truncate">{p.name}</h3>
-                    <p className="text-xs text-muted-foreground">{p.location} · {p.starting_price} · {p.status}</p>
+                    <p className="text-xs text-muted-foreground">{p.property_type} · {p.location} · {p.status}</p>
                   </div>
                   <div className="flex gap-2 shrink-0">
+                    <button onClick={() => openGallery(p.id)} className="p-2 bg-secondary text-foreground/70 rounded hover:text-foreground" title="Ảnh gallery"><Image className="w-4 h-4" /></button>
                     <button onClick={() => editItem(p)} className="p-2 bg-secondary text-foreground/70 rounded hover:text-foreground"><Pencil className="w-4 h-4" /></button>
                     <button onClick={() => handleDelete("properties", p.id)} className="p-2 bg-destructive/10 text-destructive rounded hover:bg-destructive/20"><Trash2 className="w-4 h-4" /></button>
                   </div>
@@ -401,34 +458,36 @@ const Admin = () => {
                   </span>
                 </div>
 
-                {/* Current preview */}
+                {/* Video URL input */}
+                <div>
+                  <label className={labelClass}>URL Video (dán link video bên ngoài)</label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <input
+                        value={heroVideoUrl}
+                        onChange={e => setHeroVideoUrl(e.target.value)}
+                        placeholder="https://example.com/video.mp4"
+                        className={inputClass + " pl-10"}
+                      />
+                    </div>
+                    <button onClick={handleSaveHeroUrl} disabled={heroSaving}
+                      className="px-5 py-2.5 bg-primary text-primary-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 disabled:opacity-50 shrink-0">
+                      <Save className="w-4 h-4 inline mr-1" /> {heroSaving ? "Đang lưu..." : "Lưu"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Preview */}
                 {heroVideoUrl && (
                   <div className="space-y-3">
-                    <p className={labelClass}>Video hiện tại:</p>
+                    <p className={labelClass}>Xem trước:</p>
                     <video src={heroVideoUrl} controls className="w-full max-w-lg rounded-lg border border-border" />
-                    <div className="flex gap-3">
-                      <label className="px-5 py-2.5 bg-accent text-accent-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
-                        Thay video
-                        <input type="file" accept="video/mp4" className="hidden" onChange={e => { if (e.target.files?.[0]) handleHeroVideoUpload(e.target.files[0]); }} />
-                      </label>
-                      <button onClick={handleRemoveHeroVideo} className="px-5 py-2.5 bg-destructive/10 text-destructive rounded-md font-body text-sm font-semibold hover:bg-destructive/20">
-                        <Trash2 className="w-4 h-4 inline mr-1" /> Xóa video
-                      </button>
-                    </div>
+                    <button onClick={handleRemoveHeroVideo} className="px-5 py-2.5 bg-destructive/10 text-destructive rounded-md font-body text-sm font-semibold hover:bg-destructive/20">
+                      <Trash2 className="w-4 h-4 inline mr-1" /> Xóa video
+                    </button>
                   </div>
                 )}
-
-                {!heroVideoUrl && (
-                  <div className="space-y-3">
-                    <p className="text-sm text-muted-foreground font-body">Chưa có video hero. Upload video MP4 (tối đa 20MB).</p>
-                    <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
-                      <Video className="w-4 h-4" /> Upload Video
-                      <input type="file" accept="video/mp4" className="hidden" onChange={e => { if (e.target.files?.[0]) handleHeroVideoUpload(e.target.files[0]); }} />
-                    </label>
-                  </div>
-                )}
-
-                {heroUploading && <p className="text-sm text-primary font-body">Đang upload video...</p>}
               </div>
             )}
 
