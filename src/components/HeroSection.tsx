@@ -34,6 +34,7 @@ const HeroSection = () => {
             muted
             loop
             playsInline
+            preload="metadata"
             className="w-full h-auto object-cover"
             onError={() => setVideoError(true)}
           />

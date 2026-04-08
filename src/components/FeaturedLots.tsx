@@ -1,12 +1,16 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Building2, Car, Home, Landmark, MapPin, TreePine, Search } from "lucide-react";
+import { Building2, Car, Home, Landmark, MapPin, TreePine, Search, Package } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams } from "react-router-dom";
 
+const PROPERTY_CATEGORIES = ["Bất động sản", "Động sản", "Tài sản khác"] as const;
+
 const iconMap: Record<string, any> = {
   "Bất động sản": Home,
+  "Động sản": Car,
+  "Tài sản khác": Package,
   "Đất nền": Landmark,
   "Phương tiện": Car,
   "Nhà ở": Building2,
@@ -27,12 +31,6 @@ const FeaturedLots = () => {
     },
   });
 
-  const categories = useMemo(() => {
-    if (!properties) return [];
-    const cats = [...new Set(properties.map(p => p.property_type).filter(Boolean))] as string[];
-    return cats;
-  }, [properties]);
-
   const filtered = useMemo(() => {
     if (!properties) return [];
     let result = properties;
@@ -48,6 +46,18 @@ const FeaturedLots = () => {
     }
     return result;
   }, [properties, activeCategory, localSearch]);
+
+  // Group by category for display
+  const groupedByCategory = useMemo(() => {
+    const groups: Record<string, typeof filtered> = {};
+    const items = activeCategory ? filtered : filtered;
+    items.forEach(p => {
+      const cat = p.property_type || "Tài sản khác";
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(p);
+    });
+    return groups;
+  }, [filtered, activeCategory]);
 
   return (
     <section id="auctions" className="py-24 bg-secondary">
@@ -71,20 +81,18 @@ const FeaturedLots = () => {
               className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-          {categories.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-2">
-              <button onClick={() => setActiveCategory(null)}
-                className={`px-4 py-1.5 rounded-full text-sm font-body font-medium transition-colors ${!activeCategory ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground/70 hover:text-foreground"}`}>
-                Tất cả
+          <div className="flex flex-wrap justify-center gap-2">
+            <button onClick={() => setActiveCategory(null)}
+              className={`px-4 py-1.5 rounded-full text-sm font-body font-medium transition-colors ${!activeCategory ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground/70 hover:text-foreground"}`}>
+              Tất cả
+            </button>
+            {PROPERTY_CATEGORIES.map(cat => (
+              <button key={cat} onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-1.5 rounded-full text-sm font-body font-medium transition-colors ${activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground/70 hover:text-foreground"}`}>
+                {cat}
               </button>
-              {categories.map(cat => (
-                <button key={cat} onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-body font-medium transition-colors ${activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground/70 hover:text-foreground"}`}>
-                  {cat}
-                </button>
-              ))}
-            </div>
-          )}
+            ))}
+          </div>
         </div>
 
         {isLoading ? (
@@ -92,44 +100,60 @@ const FeaturedLots = () => {
         ) : !filtered.length ? (
           <p className="text-center text-muted-foreground font-body">Không tìm thấy tài sản phù hợp.</p>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((item, i) => {
-              const Icon = iconMap[item.property_type || ""] || Home;
+          <div className="space-y-12">
+            {Object.entries(groupedByCategory).map(([category, items]) => {
+              const CatIcon = iconMap[category] || Home;
               return (
-                <motion.a href={`/property/${item.id}`} key={item.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
-                  className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow group block">
-                  {item.image_url && <img src={item.image_url} alt={item.name} className="w-full h-48 object-cover" />}
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                        <Icon className="w-5 h-5 text-primary" />
-                      </div>
-                      <span className={`text-xs font-body font-semibold px-3 py-1 rounded-full ${
-                        item.status === "Đang nhận hồ sơ" ? "bg-green-brand/15 text-green-brand"
-                        : item.status === "Sắp diễn ra" ? "bg-accent/15 text-accent"
-                        : "bg-muted text-muted-foreground"
-                      }`}>{item.status}</span>
+                <div key={category}>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-9 h-9 rounded-lg bg-primary/20 flex items-center justify-center">
+                      <CatIcon className="w-5 h-5 text-primary" />
                     </div>
-                    <h3 className="text-lg font-display font-600 mb-3 group-hover:text-primary transition-colors leading-snug">{item.name}</h3>
-                    <div className="flex flex-wrap gap-3 text-sm text-muted-foreground font-body mb-4">
-                      {item.location && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{item.location}</span>}
-                      {item.property_type && <span className="px-2 py-0.5 bg-secondary rounded text-xs">{item.property_type}</span>}
-                      {item.area && <span className="text-xs">{item.area}</span>}
-                    </div>
-                    {item.description && <p className="text-sm text-muted-foreground font-body mb-4 line-clamp-2">{item.description}</p>}
-                    <div className="flex items-center justify-between pt-4 border-t border-border">
-                      <div>
-                        <span className="text-xs text-muted-foreground font-body block">Giá khởi điểm</span>
-                        <span className="text-xl font-display font-700 text-accent">{item.starting_price || "Liên hệ"}</span>
-                      </div>
-                      {item.auction_date && (
-                        <span className="text-xs text-muted-foreground font-body">
-                          {new Date(item.auction_date).toLocaleDateString("vi-VN")}
-                        </span>
-                      )}
-                    </div>
+                    <h3 className="text-xl font-display font-600 text-foreground">{category}</h3>
+                    <span className="text-sm text-muted-foreground font-body">({items.length})</span>
                   </div>
-                </motion.a>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {items.map((item, i) => {
+                      const Icon = iconMap[item.property_type || ""] || Home;
+                      return (
+                        <motion.a href={`/property/${item.id}`} key={item.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
+                          className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow group block">
+                          {item.image_url && <img src={item.image_url} alt={item.name} className="w-full h-48 object-cover" />}
+                          <div className="p-6">
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                                <Icon className="w-5 h-5 text-primary" />
+                              </div>
+                              <span className={`text-xs font-body font-semibold px-3 py-1 rounded-full ${
+                                item.status === "Đang nhận hồ sơ" ? "bg-green-brand/15 text-green-brand"
+                                : item.status === "Sắp diễn ra" ? "bg-accent/15 text-accent"
+                                : "bg-muted text-muted-foreground"
+                              }`}>{item.status}</span>
+                            </div>
+                            <h3 className="text-lg font-display font-600 mb-3 group-hover:text-primary transition-colors leading-snug">{item.name}</h3>
+                            <div className="flex flex-wrap gap-3 text-sm text-muted-foreground font-body mb-4">
+                              {item.location && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{item.location}</span>}
+                              {item.property_type && <span className="px-2 py-0.5 bg-secondary rounded text-xs">{item.property_type}</span>}
+                              {item.area && <span className="text-xs">{item.area}</span>}
+                            </div>
+                            {item.description && <p className="text-sm text-muted-foreground font-body mb-4 line-clamp-2">{item.description}</p>}
+                            <div className="flex items-center justify-between pt-4 border-t border-border">
+                              <div>
+                                <span className="text-xs text-muted-foreground font-body block">Giá khởi điểm</span>
+                                <span className="text-xl font-display font-700 text-accent">{item.starting_price || "Liên hệ"}</span>
+                              </div>
+                              {item.auction_date && (
+                                <span className="text-xs text-muted-foreground font-body">
+                                  {new Date(item.auction_date).toLocaleDateString("vi-VN")}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </motion.a>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
           </div>
