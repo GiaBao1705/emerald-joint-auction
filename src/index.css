@@ -4,48 +4,48 @@
 
 @layer base {
   :root {
-    --background: 148 22% 82%;
-    --foreground: 150 40% 10%;
+    --background: 150 30% 95%;
+    --foreground: 150 30% 12%;
 
-    --card: 148 20% 88%;
-    --card-foreground: 150 40% 10%;
+    --card: 150 25% 98%;
+    --card-foreground: 150 30% 12%;
 
-    --popover: 148 20% 88%;
-    --popover-foreground: 150 40% 10%;
+    --popover: 150 25% 98%;
+    --popover-foreground: 150 30% 12%;
 
-    --primary: 150 50% 24%;
+    --primary: 125 46% 34%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 148 18% 78%;
-    --secondary-foreground: 150 40% 12%;
+    --secondary: 150 20% 92%;
+    --secondary-foreground: 150 30% 15%;
 
-    --muted: 148 14% 75%;
-    --muted-foreground: 150 12% 35%;
+    --muted: 150 15% 88%;
+    --muted-foreground: 150 10% 40%;
 
-    --accent: 42 80% 50%;
-    --accent-foreground: 150 40% 8%;
+    --accent: 45 100% 48%;
+    --accent-foreground: 150 30% 10%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 148 16% 70%;
-    --input: 148 16% 72%;
-    --ring: 150 50% 24%;
+    --border: 150 15% 85%;
+    --input: 150 15% 87%;
+    --ring: 125 46% 34%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --green-brand: 150 50% 24%;
+    --green-brand: 125 46% 34%;
     --green-brand-foreground: 0 0% 100%;
-    --gold-accent: 42 75% 50%;
+    --gold-accent: 45 100% 48%;
 
-    --sidebar-background: 150 35% 18%;
-    --sidebar-foreground: 148 15% 92%;
-    --sidebar-primary: 150 50% 24%;
+    --sidebar-background: 125 55% 15%;
+    --sidebar-foreground: 150 15% 92%;
+    --sidebar-primary: 125 46% 34%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 150 25% 24%;
-    --sidebar-accent-foreground: 148 15% 92%;
-    --sidebar-border: 150 20% 28%;
-    --sidebar-ring: 150 50% 24%;
+    --sidebar-accent: 125 40% 22%;
+    --sidebar-accent-foreground: 150 15% 92%;
+    --sidebar-border: 125 30% 25%;
+    --sidebar-ring: 125 46% 34%;
   }
 }
 
@@ -59,6 +59,6 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display;
+    @apply font-display font-bold;
   }
 }
