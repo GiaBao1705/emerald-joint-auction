@@ -42,9 +42,12 @@ const ArticlesSection = () => {
                 transition={{ delay: i * 0.1 }}
                 className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow group"
               >
-                {article.image_url && (
-                  <img src={article.image_url} alt={article.title} className="w-full h-48 object-cover" />
-                )}
+                <img
+                  src={article.image_url || "/placeholder.svg"}
+                  alt={article.title}
+                  className="w-full h-48 object-cover bg-muted"
+                  onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
+                />
                 <div className="p-6">
                   <span className="text-xs text-muted-foreground font-body">
                     {new Date(article.created_at).toLocaleDateString("vi-VN")}

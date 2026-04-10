@@ -24,7 +24,7 @@ const HeroSection = () => {
 
   return (
     <section className="pt-20 relative w-full overflow-hidden bg-background">
-      {/* Banner image */}
+      {/* Banner background */}
       <div className="relative">
         <img
           src={bannerImg}
@@ -32,47 +32,46 @@ const HeroSection = () => {
           className="w-full h-auto object-cover"
         />
         <div className="absolute inset-0 bg-foreground/10 pointer-events-none" />
-      </div>
 
-      {/* 2-column: Video left + Text right */}
-      <div className="container py-16 md:py-20">
-        <div className="flex flex-col md:flex-row items-center gap-10 md:gap-14">
-          {/* Left: Video */}
-          <div className="shrink-0">
-            {showVideo ? (
-              <div className="w-[320px] h-[180px] md:w-[460px] md:h-[259px] rounded-2xl overflow-hidden shadow-xl border border-border bg-foreground/5">
-                <video
-                  src={videoUrl}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                  className="w-full h-full object-cover"
-                  onError={() => setVideoError(true)}
-                />
-              </div>
-            ) : (
-              <div className="w-[320px] h-[180px] md:w-[460px] md:h-[259px] rounded-2xl overflow-hidden shadow-xl border border-border bg-muted flex items-center justify-center">
-                <span className="text-muted-foreground font-body text-sm">Video chưa được cấu hình</span>
-              </div>
-            )}
-          </div>
+        {/* 2-column overlay inside banner */}
+        <div className="absolute inset-0 flex items-center">
+          <div className="container">
+            <div className="flex flex-col md:flex-row items-center gap-10 md:gap-14">
+              {/* Left: Video */}
+              {showVideo && (
+                <div className="shrink-0">
+                  <div className="w-[320px] h-[180px] md:w-[450px] md:h-[253px] rounded-2xl overflow-hidden shadow-2xl border border-primary-foreground/20 bg-foreground/80">
+                    <video
+                      src={videoUrl}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      preload="metadata"
+                      className="w-full h-full object-cover"
+                      onError={() => setVideoError(true)}
+                    />
+                  </div>
+                </div>
+              )}
 
-          {/* Right: Text */}
-          <div className="max-w-lg text-center md:text-left">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-display leading-tight mb-5">
-              Công Ty Đấu Giá Hợp Danh <span className="text-primary">Miền Tây</span>
-            </h1>
-            <p className="text-muted-foreground font-body text-base md:text-lg leading-relaxed mb-8">
-              Đơn vị đấu giá tài sản uy tín, chuyên nghiệp hàng đầu khu vực Đồng bằng sông Cửu Long.
-            </p>
-            <a
-              href="#auctions"
-              className="inline-flex items-center px-7 py-3.5 bg-primary text-primary-foreground font-display font-semibold rounded-xl shadow-md hover:shadow-lg hover:brightness-110 transition-all duration-300"
-            >
-              Xem tài sản đấu giá
-            </a>
+              {/* Right: Text */}
+              <div className="max-w-lg text-center md:text-left">
+                <h1 className="text-2xl md:text-4xl lg:text-5xl font-display leading-tight mb-4 text-primary-foreground drop-shadow-lg">
+                  Công Ty Đấu Giá Hợp Danh{" "}
+                  <span className="text-accent">Miền Tây</span>
+                </h1>
+                <p className="text-primary-foreground/80 font-body text-sm md:text-base leading-relaxed mb-6 drop-shadow">
+                  Đơn vị đấu giá tài sản uy tín, chuyên nghiệp hàng đầu khu vực Đồng bằng sông Cửu Long.
+                </p>
+                <a
+                  href="#auctions"
+                  className="inline-flex items-center px-7 py-3 bg-accent text-accent-foreground font-display font-semibold rounded-xl shadow-lg hover:shadow-xl hover:brightness-110 transition-all duration-300 text-sm md:text-base"
+                >
+                  Xem tài sản đấu giá
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
