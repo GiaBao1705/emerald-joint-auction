@@ -37,7 +37,7 @@ const HeroSection = () => {
         {showVideo && (
           <div className="absolute inset-0 flex items-center">
             <div className="w-full max-w-[1200px] mx-auto px-4 md:px-[60px]">
-              <div className="w-[280px] sm:w-[360px] md:w-[420px] lg:w-[520px] aspect-video rounded-[14px] overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.25)] border border-white/30 bg-foreground/60">
+              <div className="w-[320px] sm:w-[420px] md:w-[520px] lg:w-[640px] aspect-video rounded-[14px] overflow-hidden shadow-[0_12px_48px_rgba(0,0,0,0.35)] border border-white/30 bg-foreground/60">
                 <video
                   src={videoUrl}
                   autoPlay

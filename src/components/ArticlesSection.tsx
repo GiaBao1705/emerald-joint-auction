@@ -32,7 +32,7 @@ const ArticlesSection = () => {
         ) : !articles?.length ? (
           <p className="text-center text-muted-foreground font-body">Hiện chưa có bài viết.</p>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-7">
             {articles.map((article, i) => (
               <motion.article
                 key={article.id}
@@ -40,14 +40,16 @@ const ArticlesSection = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow group"
+                className="bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
               >
-                <img
-                  src={article.image_url || "/placeholder.svg"}
-                  alt={article.title}
-                  className="w-full h-48 object-cover bg-muted"
-                  onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
-                />
+                <div className="w-full aspect-video bg-[#f5f5f5] flex items-center justify-center p-3">
+                  <img
+                    src={article.image_url || "/placeholder.svg"}
+                    alt={article.title}
+                    className="w-full h-full object-contain"
+                    onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
+                  />
+                </div>
                 <div className="p-6">
                   <span className="text-xs text-muted-foreground font-body">
                     {new Date(article.created_at).toLocaleDateString("vi-VN")}
