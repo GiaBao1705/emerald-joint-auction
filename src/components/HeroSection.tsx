@@ -23,27 +23,35 @@ const HeroSection = () => {
   const showVideo = useVideo && videoUrl && !videoError;
 
   return (
-    <section className="pt-20 w-full bg-foreground/90">
-      <div className="flex items-center justify-center py-10 md:py-16 px-4">
-        {showVideo ? (
-          <div className="w-full max-w-[600px] aspect-video rounded-2xl overflow-hidden shadow-2xl border border-primary-foreground/10">
-            <video
-              src={videoUrl}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              className="w-full h-full object-cover"
-              onError={() => setVideoError(true)}
-            />
+    <section className="pt-20 relative w-full overflow-hidden bg-background">
+      <div className="relative">
+        <img
+          src={bannerImg}
+          alt="Công Ty Đấu Giá Hợp Danh Miền Tây"
+          className="w-full h-auto object-cover"
+        />
+        <div className="absolute inset-0 bg-foreground/10 pointer-events-none" />
+
+        {/* Video card on the left */}
+        {showVideo && (
+          <div className="absolute inset-0 flex items-center">
+            <div className="container">
+              <div className="pl-4 md:pl-8">
+                <div className="w-[340px] md:w-[400px] aspect-video rounded-xl overflow-hidden shadow-xl border border-primary-foreground/10 bg-foreground/80">
+                  <video
+                    src={videoUrl}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    className="w-full h-full object-cover"
+                    onError={() => setVideoError(true)}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-        ) : (
-          <img
-            src={bannerImg}
-            alt="Công Ty Đấu Giá Hợp Danh Miền Tây"
-            className="w-full max-w-[600px] rounded-2xl shadow-2xl object-cover"
-          />
         )}
       </div>
     </section>
