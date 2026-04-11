@@ -30,25 +30,24 @@ const HeroSection = () => {
           alt="Công Ty Đấu Giá Hợp Danh Miền Tây"
           className="w-full h-auto object-cover"
         />
-        <div className="absolute inset-0 bg-foreground/10 pointer-events-none" />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/20 pointer-events-none" />
 
-        {/* Video card on the left */}
+        {/* Video card */}
         {showVideo && (
           <div className="absolute inset-0 flex items-center">
-            <div className="container">
-              <div className="pl-4 md:pl-8">
-                <div className="w-[340px] md:w-[400px] aspect-video rounded-xl overflow-hidden shadow-xl border border-primary-foreground/10 bg-foreground/80">
-                  <video
-                    src={videoUrl}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="metadata"
-                    className="w-full h-full object-cover"
-                    onError={() => setVideoError(true)}
-                  />
-                </div>
+            <div className="w-full max-w-[1200px] mx-auto px-4 md:px-[60px]">
+              <div className="w-[280px] sm:w-[360px] md:w-[420px] lg:w-[520px] aspect-video rounded-[14px] overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.25)] border border-white/30 bg-foreground/60">
+                <video
+                  src={videoUrl}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-cover"
+                  onError={() => setVideoError(true)}
+                />
               </div>
             </div>
           </div>
