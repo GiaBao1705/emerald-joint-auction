@@ -112,21 +112,21 @@ const FeaturedLots = () => {
                     <h3 className="text-xl font-display font-600 text-foreground">{category}</h3>
                     <span className="text-sm text-muted-foreground font-body">({items.length})</span>
                   </div>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-7">
                     {items.map((item, i) => {
                       const Icon = iconMap[item.property_type || ""] || Home;
                       return (
                         <motion.a href={`/property/${item.id}`} key={item.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
-                          className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow group block">
-                          <div className="w-full bg-muted flex items-center justify-center p-2">
+                          className="bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group block">
+                          <div className="w-full aspect-video bg-[#f5f5f5] flex items-center justify-center p-3">
                             <img
                               src={item.image_url || "/placeholder.svg"}
                               alt={item.name}
-                              className="w-full h-auto max-h-64 object-contain"
+                              className="w-full h-full object-contain"
                               onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
                             />
                           </div>
-                          <div className="p-6">
+                          <div className="p-7">
                             <div className="flex items-start justify-between mb-4">
                               <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                                 <Icon className="w-5 h-5 text-primary" />
