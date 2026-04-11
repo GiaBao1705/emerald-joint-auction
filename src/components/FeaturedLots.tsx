@@ -118,11 +118,11 @@ const FeaturedLots = () => {
                       return (
                         <motion.a href={`/property/${item.id}`} key={item.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
                           className="bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group block">
-                          <div className="w-full aspect-video bg-[#f5f5f5] flex items-center justify-center p-3">
+                          <div className="w-full h-[240px] overflow-hidden rounded-t-xl bg-muted">
                             <img
                               src={item.image_url || "/placeholder.svg"}
                               alt={item.name}
-                              className="w-full h-full object-contain"
+                              className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                               onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
                             />
                           </div>

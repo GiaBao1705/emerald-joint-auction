@@ -42,11 +42,11 @@ const ArticlesSection = () => {
                 transition={{ delay: i * 0.1 }}
                 className="bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
               >
-                <div className="w-full aspect-video bg-[#f5f5f5] flex items-center justify-center p-3">
+                <div className="w-full h-[220px] overflow-hidden rounded-t-xl bg-muted">
                   <img
                     src={article.image_url || "/placeholder.svg"}
                     alt={article.title}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                     onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
                   />
                 </div>
