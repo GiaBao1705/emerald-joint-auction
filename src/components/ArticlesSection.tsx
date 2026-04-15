@@ -20,7 +20,7 @@ const ArticlesSection = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="text-accent font-body text-sm tracking-widest uppercase font-semibold">Tin tức</span>
+          <span className="text-[#7f1d1d] font-body text-sm tracking-widest uppercase font-semibold">Tin tức</span>
           <h2 className="text-3xl md:text-5xl font-display font-700 mt-3 mb-4">Tin Tức & Bài Viết</h2>
           <p className="text-muted-foreground max-w-xl mx-auto font-body">
             Cập nhật thông tin, thông báo đấu giá và tin tức mới nhất.
@@ -46,7 +46,7 @@ const ArticlesSection = () => {
                   <img
                     src={article.image_url || "/placeholder.svg"}
                     alt={article.title}
-                    className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                    className="w-full h-full object-contain object-center bg-muted transition-transform duration-500 group-hover:scale-105 brightness-110"
                     onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
                   />
                 </div>

@@ -18,7 +18,7 @@ const HowItWorks = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="text-accent font-body text-sm tracking-widest uppercase font-semibold">Quy trình</span>
+          <span className="text-[#7f1d1d] font-body text-sm tracking-widest uppercase font-semibold">Quy trình</span>
           <h2 className="text-3xl md:text-5xl font-display mt-3 mb-4">Quy Trình Đấu Giá</h2>
           <p className="text-muted-foreground max-w-xl mx-auto font-body text-base">
             Quy trình đấu giá minh bạch, chuyên nghiệp theo đúng quy định pháp luật.

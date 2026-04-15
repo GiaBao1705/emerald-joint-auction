@@ -10,7 +10,7 @@ const ServiceSection = () => {
   ];
 
   return (
-    <section id="services" className="py-28 bg-secondary">
+    <section id="services" className="py-28 bg-[#6cb98d]/30">
       <div className="container">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -18,7 +18,7 @@ const ServiceSection = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="text-accent font-body text-sm tracking-widest uppercase font-semibold">Dịch vụ</span>
+          <span className="text-[#7f1d1d] font-body text-sm tracking-widest uppercase font-semibold">Dịch vụ</span>
           <h2 className="text-3xl md:text-5xl font-display mt-3 mb-4">Dịch Vụ Đấu Giá</h2>
         </motion.div>
 

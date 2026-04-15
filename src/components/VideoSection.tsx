@@ -24,7 +24,7 @@ const VideoSection = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="text-accent font-body text-sm tracking-widest uppercase font-semibold">Video</span>
+          <span className="text-[#7f1d1d] font-body text-sm tracking-widest uppercase font-semibold">Video</span>
           <h2 className="text-3xl md:text-5xl font-display font-700 mt-3 mb-4 text-foreground">Video Đấu Giá</h2>
           <p className="text-muted-foreground max-w-xl mx-auto font-body">
             Xem các video về hoạt động đấu giá và hướng dẫn tham gia.
@@ -59,7 +59,7 @@ const VideoSection = () => {
                     onClick={() => video.video_url && setActiveVideo(video.id)}
                   >
                     {video.thumbnail_url ? (
-                      <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
+                      <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-contain object-center bg-foreground/5 brightness-110" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-primary/10">
                         <Play className="w-12 h-12 text-primary/50" />

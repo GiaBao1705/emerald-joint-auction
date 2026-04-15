@@ -40,3 +40,21 @@
 .read-the-docs {
   color: #888;
 }
+
+/* FIX NAVBAR TRANSPARENT - Ưu tiên cao nhất */
+nav.fixed {
+  background-color: transparent !important;
+}
+
+nav.fixed:not(.bg-white) {
+  background-color: transparent !important;
+}
+
+nav[style*="transparent"] {
+  background-color: transparent !important;
+}
+
+/* Nếu có bg-card từ shadcn */
+.bg-card {
+  background-color: transparent !important;
+}

@@ -19,10 +19,10 @@ const AboutSection = () => {
           className="text-center mb-16"
         >
           <span className="text-accent font-body text-sm tracking-widest uppercase font-semibold">Về chúng tôi</span>
-          <h2 className="text-3xl md:text-5xl font-display font-700 mt-3 mb-4">Tại Sao Chọn Chúng Tôi</h2>
+          <h2 className="text-3xl md:text-5xl font-display font-700 mt-3 mb-4">Vì Sao Nên Chọn Chúng Tôi</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto font-body">
-            Công ty Đấu giá Hợp danh Miền Tây là đơn vị đấu giá tài sản chuyên nghiệp, 
-            được thành lập và hoạt động theo quy định của pháp luật Việt Nam.
+            Công ty Đấu giá Hợp danh Miền Tây là đơn vị đấu giá tài sản uy tín, hoạt động chuyên nghiệp theo đúng quy định của pháp luật Việt Nam.
+Chúng tôi cam kết mang đến giải pháp minh bạch, hiệu quả và tối ưu giá trị cho khách hàng.
           </p>
         </motion.div>
 
