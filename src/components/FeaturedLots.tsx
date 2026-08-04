@@ -60,11 +60,10 @@ const FeaturedLots = () => {
   }, [filtered, activeCategory]);
 
   return (
-    <section id="auctions" className="py-24 bg-[#6cb98d]/20">
+    <section id="auctions" className="py-24 bg-white">
       <div className="container">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-          <span className="text-[#7f1d1d] font-body text-sm tracking-widest uppercase font-semibold">Tài sản đấu giá</span>
-          <h2 className="text-3xl md:text-5xl font-display font-700 mt-3 mb-4 text-foreground">Danh Sách Đấu Giá</h2>
+          <h2 className="text-3xl md:text-5xl font-display font-700 mt-3 mb-4 text-foreground">Danh Sách Tài sản đấu giá</h2>
           <p className="text-muted-foreground max-w-xl mx-auto font-body">
             Các tài sản đang được tổ chức đấu giá công khai, minh bạch theo quy định pháp luật.
           </p>

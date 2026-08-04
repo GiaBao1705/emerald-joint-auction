@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Search, Menu, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import logo from "@/assets/logo.png";
 
 const Navbar = () => {
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -13,11 +12,35 @@ const Navbar = () => {
   useEffect(() => {
     const handleScroll = () => setHasScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
+    handleScroll();
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const links = [
+    { href: "/#about", label: "Giới thiệu" },
+    { href: "/#services", label: "Dịch vụ" },
+    { href: "/#auctions", label: "Đấu giá" },
+    { href: "/#process", label: "Quy trình" },
+    { href: "/#news", label: "Tin tức" },
+    { href: "/recruitment", label: "Tuyển dụng" },
+    { href: "/#contact", label: "Liên hệ" },
+  ];
+
+  const handleNavClick = (href: string) => {
+    setMobileOpen(false);
+
+    if (href === "/recruitment") {
+      navigate("/recruitment");
+      return;
+    }
+
+    window.location.href = href;
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (searchQuery.trim()) {
       navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchOpen(false);
@@ -25,52 +48,39 @@ const Navbar = () => {
     }
   };
 
-  const links = [
-    { href: "#about", label: "Giới thiệu" },
-    { href: "#auctions", label: "Đấu giá" },
-    { href: "#videos", label: "Video" },
-    { href: "#services", label: "Dịch vụ" },
-    { href: "#process", label: "Quy trình" },
-    { href: "/recruitment", label: "Tuyển dụng" },
-    { href: "#contact", label: "Liên hệ" },
-  ];
-
   return (
-    <nav 
+    <nav
       className={`fixed top-0 left-0 right-0 z-[9999] transition-all duration-300 ${
-        hasScrolled 
-          ? "bg-white shadow-md border-b border-gray-200" 
+        hasScrolled
+          ? "bg-white shadow-md border-b border-gray-200"
           : "!bg-transparent"
       }`}
-      style={{
-        backgroundColor: hasScrolled ? "#ffffff" : "transparent !important",
-      }}
     >
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        
-        <a href="/" className="flex items-center shrink-0">
-          <img
-            src={logo}
-            alt="Đấu Giá Hợp Danh Miền Tây"
-            className={`h-14 w-auto transition-all duration-300 ${
-              hasScrolled ? "" : "brightness-150 contrast-125 drop-shadow-md"
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center shrink-0"
+        >
+          <span
+            className={`text-lg font-semibold transition-all duration-300 ${
+              hasScrolled ? "text-gray-900" : "text-white"
             }`}
-          />
-        </a>
+          ></span>
+        </button>
 
-        <div className="hidden md:flex items-center gap-8 font-medium text-sm flex-1 justify-center">
+        <div className="hidden md:flex items-center gap-12 font-medium text-base flex-1 justify-center">
           {links.map((l) => (
-            <a
+            <button
               key={l.href}
-              href={l.href}
+              onClick={() => handleNavClick(l.href)}
               className={`transition-colors whitespace-nowrap ${
-                hasScrolled 
-                  ? "text-gray-700 hover:text-blue-600" 
-                  : "text-white drop-shadow-md hover:text-white"
+                hasScrolled
+                  ? "text-gray-700 hover:text-blue-600"
+                  : "text-green-950 hover:text-green-600"
               }`}
             >
               {l.label}
-            </a>
+            </button>
           ))}
         </div>
 
@@ -78,9 +88,9 @@ const Navbar = () => {
           <button
             onClick={() => setSearchOpen(!searchOpen)}
             className={`p-3 rounded-full transition-all ${
-              hasScrolled 
-                ? "text-gray-600 hover:bg-gray-100" 
-                : "text-white hover:bg-white/20"
+              hasScrolled
+                ? "text-gray-600 hover:bg-gray-100"
+                : "text-black hover:bg-gray/20"
             }`}
           >
             <Search className="w-5 h-5" />
@@ -97,36 +107,49 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Search Bar */}
       {searchOpen && (
-        <div className={`border-t transition-colors duration-300 ${hasScrolled ? "bg-white" : "bg-transparent backdrop-blur-sm"} px-6 py-4`}>
+        <div
+          className={`border-t transition-all duration-300 ${
+            hasScrolled ? "bg-white" : "bg-black/70 backdrop-blur-md"
+          } px-6 py-4`}
+        >
           <form onSubmit={handleSearch} className="max-w-7xl mx-auto flex gap-3">
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Tìm kiếm tài sản đấu giá..."
-              className="flex-1 px-5 py-3 bg-white/30 border border-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder:text-white/60"
+              placeholder="Tìm kiếm tài sản đấu giá, mã lô, tên khách hàng..."
+              className="flex-1 px-5 py-3.5 bg-white border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-gray-900 placeholder:text-gray-400 text-base"
               autoFocus
             />
-            <button type="submit" className="px-8 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700">
-              Tìm
+            <button
+              type="submit"
+              className="px-10 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-medium transition-colors flex items-center gap-2"
+            >
+              <Search className="w-5 h-5" />
+              Tìm kiếm
             </button>
           </form>
         </div>
       )}
 
-      {/* Mobile Menu */}
       {mobileOpen && (
-        <div className={`md:hidden border-t transition-colors duration-300 ${hasScrolled ? "bg-white" : "bg-transparent backdrop-blur-sm"} px-6 py-6 space-y-4`}>
+        <div
+          className={`md:hidden border-t transition-colors duration-300 ${
+            hasScrolled ? "bg-white" : "bg-transparent backdrop-blur-sm"
+          } px-6 py-6 space-y-4`}
+        >
           {links.map((l) => (
-            <a
+            <button
               key={l.href}
-              href={l.href}
-              onClick={() => setMobileOpen(false)}
-              className={`block py-3 font-medium transition-colors ${hasScrolled ? "text-gray-700 hover:text-blue-600" : "text-white drop-shadow-md hover:text-white/90"}`}
+              onClick={() => handleNavClick(l.href)}
+              className={`block w-full text-left py-3 font-semibold text-base transition-colors ${
+                hasScrolled
+                  ? "text-gray-700 hover:text-blue-600"
+                  : "text-green-700 hover:text-green-400"
+              }`}
             >
               {l.label}
-            </a>
+            </button>
           ))}
         </div>
       )}

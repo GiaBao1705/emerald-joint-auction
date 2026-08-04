@@ -22,8 +22,11 @@ const HeroSection = () => {
       const { data } = await (supabase.from as any)("site_settings")
         .select("*")
         .in("key", ["hero_video_url", "use_video_hero"]);
+
       const map: Record<string, string> = {};
-      (data || []).forEach((item: any) => { map[item.key] = item.value || ""; });
+      (data || []).forEach((item: any) => {
+        map[item.key] = item.value || "";
+      });
       return map;
     },
   });
@@ -33,24 +36,24 @@ const HeroSection = () => {
   const showVideo = useVideo && videoUrl && !videoError;
 
   return (
-    <section className="relative overflow-hidden">
-      <div className="relative w-full h-[500px] md:h-[550px]">
+    <section className="relative w-full overflow-hidden bg-slate-50">
+      <div className="relative w-full">
 
-        {/* Banner - Giữ gần giống ảnh gốc nhất */}
+        {/* Banner full width - TĂNG CHIỀU CAO, giữ nguyên toàn bộ nội dung */}
         <img
           src={bannerImg}
-          alt="Công Ty Đấu Giá Hợp Danh Miền Tây"
-          className="absolute inset-0 w-full h-full object-cover"
+          alt="Banner Công ty Đấu giá Hợp danh Miền Tây"
+          className="w-full h-auto block mx-auto max-h-[750px] lg:max-h-[800px] xl:max-h-[850px]"
         />
 
-        {/* Overlay nhẹ, gần với ảnh gốc */}
-        <div className="absolute inset-0 bg-black/5" />
+        {/* Overlay nhẹ */}
+        <div className="absolute inset-0 bg-black/10 pointer-events-none" />
 
-        {/* Video Card (nếu có) */}
+        {/* Video Card */}
         {showVideo && (
           <div className="absolute inset-0 flex items-center justify-center z-10 px-4">
-            <div className="w-full max-w-[950px]">
-              <div className="relative w-[340px] sm:w-[450px] md:w-[600px] lg:w-[650px] aspect-video rounded-2xl overflow-hidden shadow-2xl border border-white/30 bg-black/30 backdrop-blur-sm">
+            <div className="w-full max-w-[1250px]">
+              <div className="relative w-[440px] sm:w-[450px] md:w-[800px] lg:w-[910px] aspect-video rounded-2xl overflow-hidden shadow-2xl border border-white/30 bg-black/30 backdrop-blur-sm">
                 <video
                   ref={videoRef}
                   src={videoUrl}
@@ -61,17 +64,16 @@ const HeroSection = () => {
                   className="w-full h-full object-cover"
                   onError={() => setVideoError(true)}
                 />
+
                 <div className="absolute bottom-4 left-4 flex items-center gap-3 rounded-full bg-black/40 p-2 text-sm text-white shadow-lg">
                   <button
                     type="button"
                     onClick={() => {
-                      setVideoMuted(prev => {
+                      setVideoMuted((prev) => {
                         const next = !prev;
                         if (videoRef.current) {
                           videoRef.current.muted = next;
-                          if (!next) {
-                            videoRef.current.play().catch(() => {});
-                          }
+                          if (!next) videoRef.current.play().catch(() => {});
                         }
                         return next;
                       });

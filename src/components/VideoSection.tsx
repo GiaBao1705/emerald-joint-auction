@@ -51,15 +51,15 @@ const VideoSection = () => {
                     src={video.video_url}
                     controls
                     autoPlay
-                    className="w-full h-48 object-cover bg-foreground/5"
+                    className="w-full h-40 sm:h-44 md:h-48 object-cover bg-foreground/5"
                   />
                 ) : (
                   <div
-                    className="relative w-full h-48 bg-foreground/5 cursor-pointer"
+                    className="relative w-full h-40 sm:h-44 md:h-48 bg-foreground/5 cursor-pointer"
                     onClick={() => video.video_url && setActiveVideo(video.id)}
                   >
                     {video.thumbnail_url ? (
-                      <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-contain object-center bg-foreground/5 brightness-110" />
+                      <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover object-center bg-foreground/5 brightness-110" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-primary/10">
                         <Play className="w-12 h-12 text-primary/50" />

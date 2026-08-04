@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -14,9 +15,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['"Playfair Display"', 'serif'],
-        body: ['"Inter"', 'sans-serif'],
-      },
+      display: ['"Be Vietnam Pro"', 'sans-serif'],
+    body: ['"Be Vietnam Pro"', 'sans-serif'],
+},
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -98,5 +99,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
 } satisfies Config;

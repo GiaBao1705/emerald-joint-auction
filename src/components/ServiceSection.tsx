@@ -1,16 +1,19 @@
 import { motion } from "framer-motion";
-import { FileText, Scale, Building2, MessageSquare } from "lucide-react";
+import { FileText, Scale, Building2, MessageSquare, Landmark, } from "lucide-react";
+
 
 const ServiceSection = () => {
   const services = [
-    { icon: FileText, title: "Đấu giá quyền sử dụng đất", desc: "Tổ chức đấu giá quyền sử dụng đất theo quyết định của cơ quan nhà nước có thẩm quyền." },
+    { icon: MessageSquare, title: "Tư vấn đấu giá/Sau đấu giá", desc: "Tư vấn pháp lý, thủ tục và hỗ trợ khách hàng trong quá trình đấu giá tài sản. ký kết hợp đồng mua bán ts, thủ tục cấp giấy chứng nhận quyền sử dung đất,..." },
+    { icon: FileText, title: "Đấu giá quyền sử dụng đất/Quyền khai thác khoáng sản", desc: "Tổ chức đấu giá quyền sử dụng đất/quyền khai thác khoáng sản theo quyết định của cơ quan nhà nước có thẩm quyền." },
     { icon: Scale, title: "Đấu giá tài sản thi hành án", desc: "Đấu giá tài sản kê biên theo quyết định của cơ quan thi hành án dân sự." },
     { icon: Building2, title: "Đấu giá tài sản công", desc: "Đấu giá tài sản nhà nước, tài sản thanh lý, tài sản tịch thu sung quỹ." },
-    { icon: MessageSquare, title: "Tư vấn đấu giá", desc: "Tư vấn pháp lý, thủ tục và hỗ trợ khách hàng trong quá trình đấu giá tài sản." },
+    { icon: Landmark, title: "Đấu giá tài sản khác", desc: "Đấu giá tài sản bảo đảm ngân hàng, tài sản thỏa thuận của các tổ chức, cá nhân và các loại tài sản khác theo quy định của pháp luật." },
+    
   ];
 
   return (
-    <section id="services" className="py-28 bg-[#6cb98d]/30">
+    <section id="services" className="py-28 bg-[#6cb98d]/20">
       <div className="container">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

@@ -5,10 +5,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import Login from "./pages/Login.tsx";
-import Admin from "./pages/Admin.tsx";
 import PropertyDetail from "./pages/PropertyDetail.tsx";
 import Recruitment from "./pages/Recruitment.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import AdminFull from "./pages/AdminFull.tsx";
+
 
 const queryClient = new QueryClient();
 
@@ -21,10 +22,10 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/admin" element={<Admin />} />
           <Route path="/property/:id" element={<PropertyDetail />} />
           <Route path="/recruitment" element={<Recruitment />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/admin" element={<AdminFull />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
