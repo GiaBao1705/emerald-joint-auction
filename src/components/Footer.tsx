@@ -11,9 +11,9 @@ const Footer = () => {
 
   const offices = [
     { name: "Trụ sở chính", address: "Số 216 Trần Hưng Đạo, phường Cao Lãnh, tỉnh Đồng Tháp" },
-    { name: "VP đại diện Tam Nông", address: "Đường Huỳnh Công Sính, khóm 2, TT Tràm Chim, huyện Tam Nông, tỉnh Đồng Tháp (Khu ao sen TT Tràm Chim)" },
-    { name: "Chi nhánh Vĩnh Long", address: "Số 134/1 đường Trần Phú, khóm 2, phường 4, tỉnh Vĩnh Long" },
-    { name: "Chi nhánh Cần Thơ", address: "Số 298/1A đường Tầm Vu, phường Tân An, thành phố Cần Thơ" },
+    { name: "VP đại diện", address: "Đường Huỳnh Công Sính, ấp 2, xã Tràm Chim, tỉnh Đồng Tháp (Khu ao sen TT Tràm Chim)" },
+    { name: "Chi nhánh", address: "Số 134/1 đường Trần Phú, khóm 2, phường Phước Hậu, tỉnh Vĩnh Long" },
+    { name: "Chi nhánh", address: "Số 298/1A đường Tầm Vu, phường Tân An, thành phố Cần Thơ" },
   ];
 
   return (
