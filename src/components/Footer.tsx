@@ -10,10 +10,10 @@ const Footer = () => {
   const companyDesc = settings?.company_description || "Công ty Đấu giá Hợp danh Miền Tây — Đơn vị đấu giá tài sản uy tín, chuyên nghiệp.";
 
   const offices = [
-    { name: "Trụ sở chính", address: "Số 216 Trần Hưng Đạo, phường Cao Lãnh, tỉnh Đồng Tháp" },
+    { name: "Trụ sở chính", address: "Số 216 Trần Hưng Đạo, phường Cao Lãnh, tỉnh Đồng Tháp"},
     { name: "VP đại diện", address: "Đường Huỳnh Công Sính, ấp 2, xã Tràm Chim, tỉnh Đồng Tháp (Khu ao sen TT Tràm Chim)" },
     { name: "Chi nhánh", address: "Số 134/1 đường Trần Phú, khóm 2, phường Phước Hậu, tỉnh Vĩnh Long" },
-    { name: "Chi nhánh", address: "Số 298/1A đường Tầm Vu, phường Tân An, thành phố Cần Thơ" },
+    { name: "Chi nhánh", address: "Số 298/1A đường Tầm Vu, phường Tân An, thành phố Cần Thơ"},
   ];
 
   return (
