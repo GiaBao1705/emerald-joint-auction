@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Plus, LogOut, FileText, Building2, Video, Trash2, Pencil, Settings, Save, Users, Image } from "lucide-react";
@@ -10,6 +11,7 @@ const MAX_VIDEO_SIZE = 20 * 1024 * 1024; // 20MB
 
 const AdminFull  = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [tab, setTab] = useState<Tab>("posts");
   const [posts, setposts] = useState<any[]>([]);
   const [properties, setProperties] = useState<any[]>([]);
@@ -24,10 +26,14 @@ const AdminFull  = () => {
   const [uploading, setUploading] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
 
-  // Hero video state
+  // Hero media state
   const [heroVideoUrl, setHeroVideoUrl] = useState("");
+  const [heroImageUrl, setHeroImageUrl] = useState("");
+  const [holidayBannerUrl, setHolidayBannerUrl] = useState("");
   const [useVideoHero, setUseVideoHero] = useState(false);
   const [heroUploading, setHeroUploading] = useState(false);
+  const [heroImageUploading, setHeroImageUploading] = useState(false);
+  const [holidayBannerUploading, setHolidayBannerUploading] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -55,6 +61,8 @@ const AdminFull  = () => {
     (s.data || []).forEach((item: any) => { map[item.key] = item.value || ""; });
     setSiteSettings(map);
     setHeroVideoUrl(map.hero_video_url || "");
+    setHeroImageUrl(map.hero_image_url || "");
+    setHolidayBannerUrl(map.holiday_banner_image_url || "");
     setUseVideoHero(map.use_video_hero === "true");
     setLoading(false);
   };
@@ -167,6 +175,7 @@ const AdminFull  = () => {
     } else {
       await (supabase.from as any)("site_settings").insert({ key, value });
     }
+    await queryClient.invalidateQueries({ queryKey: ["hero-settings"] });
   };
 
   const handleSaveSettings = async () => {
@@ -204,6 +213,48 @@ const AdminFull  = () => {
     setUseVideoHero(false);
     await saveSetting("hero_video_url", "");
     await saveSetting("use_video_hero", "false");
+  };
+
+  const handleHeroImageUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      alert("Chỉ chấp nhận file ảnh!");
+      return;
+    }
+    setHeroImageUploading(true);
+    const url = await uploadFile(file);
+    if (url) {
+      setHeroImageUrl(url);
+      await saveSetting("hero_image_url", url);
+      alert("Đã upload ảnh hero thành công!");
+    }
+    setHeroImageUploading(false);
+  };
+
+  const handleRemoveHeroImage = async () => {
+    if (!confirm("Xóa ảnh hero hiện tại?")) return;
+    setHeroImageUrl("");
+    await saveSetting("hero_image_url", "");
+  };
+
+  const handleHolidayBannerUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      alert("Chỉ chấp nhận file ảnh!");
+      return;
+    }
+    setHolidayBannerUploading(true);
+    const url = await uploadFile(file);
+    if (url) {
+      setHolidayBannerUrl(url);
+      await saveSetting("holiday_banner_image_url", url);
+      alert("Đã upload ảnh lịch nghỉ lễ/tết thành công!");
+    }
+    setHolidayBannerUploading(false);
+  };
+
+  const handleRemoveHolidayBanner = async () => {
+    if (!confirm("Xóa ảnh lịch nghỉ lễ/tết hiện tại?")) return;
+    setHolidayBannerUrl("");
+    await saveSetting("holiday_banner_image_url", "");
   };
 
   const handleToggleVideoHero = async (checked: boolean) => {
@@ -399,34 +450,88 @@ const AdminFull  = () => {
                   </span>
                 </div>
 
-                {/* Current preview */}
-                {heroVideoUrl && (
+                <div className="grid gap-6 md:grid-cols-2">
                   <div className="space-y-3">
-                    <p className={labelClass}>Video hiện tại:</p>
-                    <video src={heroVideoUrl} controls className="w-full max-w-lg rounded-lg border border-border" />
-                    <div className="flex gap-3">
-                      <label className="px-5 py-2.5 bg-accent text-accent-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
-                        Thay video
-                        <input type="file" accept="video/mp4" className="hidden" onChange={e => { if (e.target.files?.[0]) handleHeroVideoUpload(e.target.files[0]); }} />
-                      </label>
-                      <button onClick={handleRemoveHeroVideo} className="px-5 py-2.5 bg-destructive/10 text-destructive rounded-md font-body text-sm font-semibold hover:bg-destructive/20">
-                        <Trash2 className="w-4 h-4 inline mr-1" /> Xóa video
-                      </button>
-                    </div>
+                    <p className={labelClass}>Ảnh hero hiện tại:</p>
+                    {heroImageUrl ? (
+                      <>
+                        <img src={heroImageUrl} alt="Hero banner" className="w-full max-w-md h-40 object-cover rounded-lg border border-border" />
+                        <div className="flex gap-3">
+                          <label className="px-5 py-2.5 bg-accent text-accent-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
+                            Thay ảnh
+                            <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleHeroImageUpload(e.target.files[0]); }} />
+                          </label>
+                          <button onClick={handleRemoveHeroImage} className="px-5 py-2.5 bg-destructive/10 text-destructive rounded-md font-body text-sm font-semibold hover:bg-destructive/20">
+                            <Trash2 className="w-4 h-4 inline mr-1" /> Xóa ảnh
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="space-y-3">
+                        <p className="text-sm text-muted-foreground font-body">Chưa có ảnh hero. Upload hình ảnh banner.</p>
+                        <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
+                          <Image className="w-4 h-4" /> Upload Ảnh
+                          <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleHeroImageUpload(e.target.files[0]); }} />
+                        </label>
+                      </div>
+                    )}
+                    {heroImageUploading && <p className="text-sm text-primary font-body">Đang upload ảnh...</p>}
                   </div>
-                )}
 
-                {!heroVideoUrl && (
                   <div className="space-y-3">
-                    <p className="text-sm text-muted-foreground font-body">Chưa có video hero. Upload video MP4 (tối đa 20MB).</p>
-                    <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
-                      <Video className="w-4 h-4" /> Upload Video
-                      <input type="file" accept="video/mp4" className="hidden" onChange={e => { if (e.target.files?.[0]) handleHeroVideoUpload(e.target.files[0]); }} />
-                    </label>
+                    <p className={labelClass}>Ảnh lịch nghỉ lễ / Tết:</p>
+                    {holidayBannerUrl ? (
+                      <>
+                        <img src={holidayBannerUrl} alt="Holiday banner" className="w-full max-w-md h-40 object-cover rounded-lg border border-border" />
+                        <div className="flex gap-3">
+                          <label className="px-5 py-2.5 bg-accent text-accent-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
+                            Thay ảnh
+                            <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleHolidayBannerUpload(e.target.files[0]); }} />
+                          </label>
+                          <button onClick={handleRemoveHolidayBanner} className="px-5 py-2.5 bg-destructive/10 text-destructive rounded-md font-body text-sm font-semibold hover:bg-destructive/20">
+                            <Trash2 className="w-4 h-4 inline mr-1" /> Xóa ảnh
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="space-y-3">
+                        <p className="text-sm text-muted-foreground font-body">Chưa có ảnh lịch nghỉ lễ/Tết. Upload khi cần.</p>
+                        <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
+                          <Image className="w-4 h-4" /> Upload lịch
+                          <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleHolidayBannerUpload(e.target.files[0]); }} />
+                        </label>
+                      </div>
+                    )}
+                    {holidayBannerUploading && <p className="text-sm text-primary font-body">Đang upload ảnh lịch...</p>}
                   </div>
-                )}
 
-                {heroUploading && <p className="text-sm text-primary font-body">Đang upload video...</p>}
+                  <div className="space-y-3 md:col-span-2">
+                    <p className={labelClass}>Video hero:</p>
+                    {heroVideoUrl ? (
+                      <>
+                        <video src={heroVideoUrl} controls className="w-full max-w-md rounded-lg border border-border" />
+                        <div className="flex gap-3">
+                          <label className="px-5 py-2.5 bg-accent text-accent-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
+                            Thay video
+                            <input type="file" accept="video/mp4" className="hidden" onChange={e => { if (e.target.files?.[0]) handleHeroVideoUpload(e.target.files[0]); }} />
+                          </label>
+                          <button onClick={handleRemoveHeroVideo} className="px-5 py-2.5 bg-destructive/10 text-destructive rounded-md font-body text-sm font-semibold hover:bg-destructive/20">
+                            <Trash2 className="w-4 h-4 inline mr-1" /> Xóa video
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="space-y-3">
+                        <p className="text-sm text-muted-foreground font-body">Chưa có video hero. Upload video MP4 (tối đa 20MB).</p>
+                        <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
+                          <Video className="w-4 h-4" /> Upload Video
+                          <input type="file" accept="video/mp4" className="hidden" onChange={e => { if (e.target.files?.[0]) handleHeroVideoUpload(e.target.files[0]); }} />
+                        </label>
+                      </div>
+                    )}
+                    {heroUploading && <p className="text-sm text-primary font-body">Đang upload video...</p>}
+                  </div>
+                </div>
               </div>
             )}
 
