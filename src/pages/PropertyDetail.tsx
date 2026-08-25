@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { formatDateDisplay } from "@/lib/utils";
 import { ArrowLeft, Calendar, FileText, MapPin, Ruler, ChevronLeft, ChevronRight } from "lucide-react";
 
 const PropertyDetail = () => {
@@ -165,7 +166,7 @@ const PropertyDetail = () => {
                   <div>
                     <span className="text-xs text-muted-foreground font-body block">Thời gian bán hồ sơ</span>
                     <span className="font-body font-medium text-sm">
-                      {new Date(property.sale_start_at).toLocaleDateString("vi-VN", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      {formatDateDisplay(property.sale_start_at, true)}
                     </span>
                   </div>
                 </div>
@@ -176,7 +177,7 @@ const PropertyDetail = () => {
                   <div>
                     <span className="text-xs text-muted-foreground font-body block">Thời gian tiếp nhận hồ sơ</span>
                     <span className="font-body font-medium text-sm">
-                      {new Date(property.acceptance_start_at).toLocaleDateString("vi-VN", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      {formatDateDisplay(property.acceptance_start_at, true)}
                     </span>
                   </div>
                 </div>
@@ -190,7 +191,7 @@ const PropertyDetail = () => {
               <div>
                 <span className="text-xs text-muted-foreground font-body block">Ngày đấu giá</span>
                 <span className="font-body font-medium text-sm">
-                  {new Date(property.auction_date).toLocaleDateString("vi-VN", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  {formatDateDisplay(property.auction_date, true)}
                 </span>
               </div>
             </div>

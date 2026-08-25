@@ -205,7 +205,7 @@ const PostManager = () => {
                       <tr key={post.id} className="hover:bg-slate-50">
                         <td className="px-4 py-4 font-medium text-slate-900">{post.title}</td>
                         <td className="px-4 py-4 text-slate-600">{categories.find((cat) => cat.key === post.category)?.label || post.category}</td>
-                        <td className="px-4 py-4 text-slate-600">{new Date(post.created_at).toLocaleDateString("vi-VN")}</td>
+                        <td className="px-4 py-4 text-slate-600">{formatDateDisplay(post.created_at)}</td>
                         <td className="px-4 py-4 space-x-2">
                           <button
                             type="button"

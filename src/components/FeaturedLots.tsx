@@ -150,7 +150,7 @@ const FeaturedLots = () => {
                               </div>
                               {item.auction_date && (
                                 <span className="text-xs text-muted-foreground font-body">
-                                  {new Date(item.auction_date).toLocaleDateString("vi-VN")}
+                                  {formatDateDisplay(item.auction_date, true)}
                                 </span>
                               )}
                             </div>

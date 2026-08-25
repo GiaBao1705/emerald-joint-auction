@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
+import { formatDateDisplay } from "@/lib/utils";
 
 const Recruitment = () => {
   const { data: jobs, isLoading } = useQuery({
@@ -40,7 +41,7 @@ const Recruitment = () => {
                     <h3 className="text-lg font-display font-600 mb-3">{job.title}</h3>
                     {job.content && <p className="text-sm text-muted-foreground font-body whitespace-pre-line">{job.content}</p>}
                     <p className="text-xs text-muted-foreground font-body mt-4">
-                      {new Date(job.created_at).toLocaleDateString("vi-VN")}
+                      {formatDateDisplay(job.created_at)}
                     </p>
                   </div>
                 </motion.div>

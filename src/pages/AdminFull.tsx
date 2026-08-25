@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { formatDateDisplay } from "@/lib/utils";
 import { Plus, LogOut, FileText, Building2, Video, Trash2, Pencil, Settings, Save, Users, Image } from "lucide-react";
 import PostManager from "./PostManager";
 
@@ -445,7 +446,7 @@ const AdminFull  = () => {
                   {v.thumbnail_url && <img src={v.thumbnail_url} alt="" className="w-16 h-16 rounded object-cover shrink-0" />}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-body font-semibold text-sm truncate">{v.title}</h3>
-                    <p className="text-xs text-muted-foreground">{new Date(v.created_at).toLocaleDateString("vi-VN")} · {v.published ? "Đã xuất bản" : "Nháp"}</p>
+                    <p className="text-xs text-muted-foreground">{formatDateDisplay(v.created_at)} · {v.published ? "Đã xuất bản" : "Nháp"}</p>
                   </div>
                   <div className="flex gap-2 shrink-0">
                     <button onClick={() => editItem(v)} className="p-2 bg-secondary text-foreground/70 rounded hover:text-foreground"><Pencil className="w-4 h-4" /></button>
@@ -462,7 +463,7 @@ const AdminFull  = () => {
                   {r.image_url && <img src={r.image_url} alt="" className="w-16 h-16 rounded object-cover shrink-0" />}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-body font-semibold text-sm truncate">{r.title}</h3>
-                    <p className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("vi-VN")} · {r.published ? "Đã xuất bản" : "Nháp"}</p>
+                    <p className="text-xs text-muted-foreground">{formatDateDisplay(r.created_at)} · {r.published ? "Đã xuất bản" : "Nháp"}</p>
                   </div>
                   <div className="flex gap-2 shrink-0">
                     <button onClick={() => editItem(r)} className="p-2 bg-secondary text-foreground/70 rounded hover:text-foreground"><Pencil className="w-4 h-4" /></button>

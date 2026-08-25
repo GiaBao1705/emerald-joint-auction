@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { formatDateDisplay } from "@/lib/utils";
 
 const ArticlesSection = () => {
   const { data: articles, isLoading } = useQuery({
@@ -78,9 +79,7 @@ const ArticlesSection = () => {
 
                 <div className="p-6">
                   <span className="text-xs text-muted-foreground font-body">
-                    {new Date(article.created_at).toLocaleDateString(
-                      "vi-VN"
-                    )}
+                    {formatDateDisplay(article.created_at)}
                   </span>
 
                   <h3 className="text-lg font-display font-600 mt-2 mb-3 group-hover:text-primary transition-colors leading-snug">
