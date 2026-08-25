@@ -4,6 +4,7 @@ import { Building2, Car, Home, Landmark, MapPin, TreePine, Search, Package } fro
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams } from "react-router-dom";
+import { formatDateDisplay } from "@/lib/utils";
 
 const PROPERTY_CATEGORIES = ["Bất động sản", "Động sản", "Tài sản khác"] as const;
 
