@@ -119,8 +119,13 @@ const AdminFull  = () => {
 
     if (tab === "posts") {
       const payload = { title: formData.title?.trim(), content: formData.content?.trim() || null, image_url: imageUrl, category: "news" };
-      if (editing) await supabase.from("posts").update(payload).eq("id", editing).select();
-      else await supabase.from("posts").insert(payload);
+      const { error } = editing
+        ? await supabase.from("posts").update(payload).eq("id", editing).select()
+        : await supabase.from("posts").insert(payload).select();
+
+      if (error) {
+        alert("Lỗi lưu bài viết: " + error.message); setUploading(false); return;
+      }
     } else if (tab === "properties") {
       const propertyStatus = formData.status || "Đang nhận hồ sơ";
       const payload = {
@@ -138,21 +143,38 @@ const AdminFull  = () => {
         sale_start_at: propertyStatus === "Đang nhận hồ sơ" ? formData.sale_start_at || null : null,
         acceptance_start_at: propertyStatus === "Đang nhận hồ sơ" ? formData.acceptance_start_at || null : null,
       };
+
+      let result;
       if (editing) {
-        // Lấy dữ liệu cũ để merge, tránh mất trường NOT NULL
         const old = properties.find((p) => p.id === editing) || {};
-        await supabase.from("properties").update({ ...old, ...payload }).eq("id", editing).select();
+        result = await supabase.from("properties").update({ ...old, ...payload }).eq("id", editing).select();
       } else {
-        await supabase.from("properties").insert(payload);
+        result = await supabase.from("properties").insert(payload).select();
+      }
+
+      if (result.error) {
+        alert("Lỗi lưu tài sản: " + result.error.message);
+        setUploading(false);
+        return;
       }
     } else if (tab === "videos") {
       const payload = { title: formData.title?.trim(), description: formData.description?.trim() || null, video_url: videoUrl, thumbnail_url: thumbnailUrl, published: formData.published };
-      if (editing) await (supabase.from as any)("videos").update(payload).eq("id", editing).select();
-      else await (supabase.from as any)("videos").insert(payload);
+      const { error } = editing
+        ? await (supabase.from as any)("videos").update(payload).eq("id", editing).select()
+        : await (supabase.from as any)("videos").insert(payload).select();
+
+      if (error) {
+        alert("Lỗi lưu video: " + error.message); setUploading(false); return;
+      }
     } else if (tab === "recruitments") {
       const payload = { title: formData.title?.trim(), content: formData.content?.trim() || null, image_url: imageUrl, published: formData.published };
-      if (editing) await (supabase.from as any)("recruitments").update(payload).eq("id", editing).select();
-      else await (supabase.from as any)("recruitments").insert(payload);
+      const { error } = editing
+        ? await (supabase.from as any)("recruitments").update(payload).eq("id", editing).select()
+        : await (supabase.from as any)("recruitments").insert(payload).select();
+
+      if (error) {
+        alert("Lỗi lưu tuyển dụng: " + error.message); setUploading(false); return;
+      }
     }
 
     resetForm();
