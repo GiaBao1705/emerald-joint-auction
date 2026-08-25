@@ -8,7 +8,21 @@ export function cn(...inputs: ClassValue[]) {
 export function formatDateDisplay(value: string | Date | null | undefined, includeTime = false) {
   if (!value) return "";
 
-  const date = value instanceof Date ? value : new Date(value);
+  let date: Date;
+
+  if (value instanceof Date) {
+    date = value;
+  } else if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      date = new Date(`${trimmed}T00:00:00`);
+    } else {
+      date = new Date(trimmed);
+    }
+  } else {
+    date = new Date(value);
+  }
+
   if (Number.isNaN(date.getTime())) return "";
 
   const pad = (n: number) => String(n).padStart(2, "0");
