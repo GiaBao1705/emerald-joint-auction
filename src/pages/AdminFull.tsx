@@ -144,12 +144,25 @@ const AdminFull  = () => {
         acceptance_start_at: propertyStatus === "Đang nhận hồ sơ" ? formData.acceptance_start_at || null : null,
       };
 
-      let result;
-      if (editing) {
-        const old = properties.find((p) => p.id === editing) || {};
-        result = await supabase.from("properties").update({ ...old, ...payload }).eq("id", editing).select();
-      } else {
-        result = await supabase.from("properties").insert(payload).select();
+      const saveProperty = async (finalPayload: typeof payload) => {
+        if (editing) {
+          const old = properties.find((p) => p.id === editing) || {};
+          return await supabase.from("properties").update({ ...old, ...finalPayload }).eq("id", editing).select();
+        }
+        return await supabase.from("properties").insert(finalPayload).select();
+      };
+
+      let result = await saveProperty(payload);
+      if (result.error) {
+        const message = result.error.message || "";
+        const missingColumn = /sale_start_at|acceptance_start_at/i.test(message) && /column.*does not exist|does not exist/i.test(message);
+
+        if (missingColumn) {
+          const fallbackPayload = { ...payload };
+          delete fallbackPayload.sale_start_at;
+          delete fallbackPayload.acceptance_start_at;
+          result = await saveProperty(fallbackPayload);
+        }
       }
 
       if (result.error) {
