@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { formatDateDisplay } from "@/lib/utils";
+import { formatDateDisplay, formatDateTimeForInput, parseDateTimeInput } from "@/lib/utils";
 import { Plus, LogOut, FileText, Building2, Video, Trash2, Pencil, Settings, Save, Users, Image } from "lucide-react";
 import PostManager from "./PostManager";
 
@@ -344,19 +344,21 @@ const AdminFull  = () => {
                         <div>
                           <label className={labelClass}>Thời gian bán hồ sơ</label>
                           <input
-                            type="datetime-local"
-                            value={formData.sale_start_at ? formData.sale_start_at.slice(0, 16) : ""}
-                            onChange={e => setFormData({ ...formData, sale_start_at: e.target.value })}
+                            type="text"
+                            value={formatDateTimeForInput(formData.sale_start_at)}
+                            onChange={e => setFormData({ ...formData, sale_start_at: parseDateTimeInput(e.target.value) })}
                             className={inputClass}
+                            placeholder="dd/mm/yyyy HH:mm"
                           />
                         </div>
                         <div>
                           <label className={labelClass}>Thời gian tiếp nhận hồ sơ</label>
                           <input
-                            type="datetime-local"
-                            value={formData.acceptance_start_at ? formData.acceptance_start_at.slice(0, 16) : ""}
-                            onChange={e => setFormData({ ...formData, acceptance_start_at: e.target.value })}
+                            type="text"
+                            value={formatDateTimeForInput(formData.acceptance_start_at)}
+                            onChange={e => setFormData({ ...formData, acceptance_start_at: parseDateTimeInput(e.target.value) })}
                             className={inputClass}
+                            placeholder="dd/mm/yyyy HH:mm"
                           />
                         </div>
                       </>
@@ -366,10 +368,11 @@ const AdminFull  = () => {
                       <div>
                         <label className={labelClass}>Ngày đấu giá</label>
                         <input
-                          type="datetime-local"
-                          value={formData.auction_date ? formData.auction_date.slice(0, 16) : ""}
-                          onChange={e => setFormData({ ...formData, auction_date: e.target.value })}
+                          type="text"
+                          value={formatDateTimeForInput(formData.auction_date)}
+                          onChange={e => setFormData({ ...formData, auction_date: parseDateTimeInput(e.target.value) })}
                           className={inputClass}
+                          placeholder="dd/mm/yyyy HH:mm"
                         />
                       </div>
                     )}
