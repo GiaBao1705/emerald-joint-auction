@@ -121,6 +121,7 @@ const AdminFull  = () => {
       if (editing) await supabase.from("posts").update(payload).eq("id", editing).select();
       else await supabase.from("posts").insert(payload);
     } else if (tab === "properties") {
+      const propertyStatus = formData.status || "Đang nhận hồ sơ";
       const payload = {
         name: formData.name?.trim(),
         description: formData.description?.trim() || null,
@@ -128,11 +129,13 @@ const AdminFull  = () => {
         property_type: formData.property_type?.trim() || null,
         area: formData.area?.trim() || null,
         starting_price: formData.starting_price?.trim() || null,
-        status: formData.status || "Đang nhận hồ sơ",
+        status: propertyStatus,
         image_url: imageUrl,
         documents_url: documentsUrl,
         published: formData.published ?? true,
-        auction_date: formData.auction_date || null,
+        auction_date: propertyStatus === "Sắp diễn ra" ? formData.auction_date || null : null,
+        sale_start_at: propertyStatus === "Đang nhận hồ sơ" ? formData.sale_start_at || null : null,
+        acceptance_start_at: propertyStatus === "Đang nhận hồ sơ" ? formData.acceptance_start_at || null : null,
       };
       if (editing) {
         // Lấy dữ liệu cũ để merge, tránh mất trường NOT NULL
@@ -167,6 +170,7 @@ const AdminFull  = () => {
 
   const inputClass = "w-full px-3 py-2.5 bg-card border border-border rounded-md text-foreground font-body text-sm focus:outline-none focus:ring-2 focus:ring-primary";
   const labelClass = "block text-sm font-body font-medium text-foreground/70 mb-1";
+  const selectedPropertyStatus = formData.status || "Đang nhận hồ sơ";
 
   const saveSetting = async (key: string, value: string) => {
     const { data: existing } = await (supabase.from as any)("site_settings").select("id").eq("key", key).maybeSingle();
@@ -334,7 +338,40 @@ const AdminFull  = () => {
                       <select value={formData.status || "Đang nhận hồ sơ"} onChange={e => setFormData({ ...formData, status: e.target.value })} className={inputClass}>
                         <option>Đang nhận hồ sơ</option><option>Sắp diễn ra</option><option>Đã kết thúc</option>
                       </select></div>
-                    <div><label className={labelClass}>Ngày đấu giá</label><input type="datetime-local" value={formData.auction_date ? formData.auction_date.slice(0, 16) : ""} onChange={e => setFormData({ ...formData, auction_date: e.target.value })} className={inputClass} /></div>
+                    {selectedPropertyStatus === "Đang nhận hồ sơ" && (
+                      <>
+                        <div>
+                          <label className={labelClass}>Thời gian bán hồ sơ</label>
+                          <input
+                            type="datetime-local"
+                            value={formData.sale_start_at ? formData.sale_start_at.slice(0, 16) : ""}
+                            onChange={e => setFormData({ ...formData, sale_start_at: e.target.value })}
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Thời gian tiếp nhận hồ sơ</label>
+                          <input
+                            type="datetime-local"
+                            value={formData.acceptance_start_at ? formData.acceptance_start_at.slice(0, 16) : ""}
+                            onChange={e => setFormData({ ...formData, acceptance_start_at: e.target.value })}
+                            className={inputClass}
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {selectedPropertyStatus === "Sắp diễn ra" && (
+                      <div>
+                        <label className={labelClass}>Ngày đấu giá</label>
+                        <input
+                          type="datetime-local"
+                          value={formData.auction_date ? formData.auction_date.slice(0, 16) : ""}
+                          onChange={e => setFormData({ ...formData, auction_date: e.target.value })}
+                          className={inputClass}
+                        />
+                      </div>
+                    )}
                   </div>
                   <div><label className={labelClass}>Mô tả</label><textarea value={formData.description || ""} onChange={e => setFormData({ ...formData, description: e.target.value })} className={inputClass + " min-h-[100px]"} maxLength={5000} /></div>
                   <div><label className={labelClass}>Hình ảnh tài sản</label><input type="file" accept="image/*" onChange={e => setFormData({ ...formData, imageFile: e.target.files?.[0] })} className={inputClass} />

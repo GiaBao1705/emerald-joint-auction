@@ -157,7 +157,34 @@ const PropertyDetail = () => {
               </div>
             </div>
           )}
-          {property.auction_date && (
+          {property.status === "Đang nhận hồ sơ" && (
+            <>
+              {property.sale_start_at && (
+                <div className="flex items-center gap-3 p-4 bg-card border border-border rounded-lg">
+                  <Calendar className="w-5 h-5 text-primary shrink-0" />
+                  <div>
+                    <span className="text-xs text-muted-foreground font-body block">Thời gian bán hồ sơ</span>
+                    <span className="font-body font-medium text-sm">
+                      {new Date(property.sale_start_at).toLocaleDateString("vi-VN", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {property.acceptance_start_at && (
+                <div className="flex items-center gap-3 p-4 bg-card border border-border rounded-lg">
+                  <Calendar className="w-5 h-5 text-primary shrink-0" />
+                  <div>
+                    <span className="text-xs text-muted-foreground font-body block">Thời gian tiếp nhận hồ sơ</span>
+                    <span className="font-body font-medium text-sm">
+                      {new Date(property.acceptance_start_at).toLocaleDateString("vi-VN", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {property.status === "Sắp diễn ra" && property.auction_date && (
             <div className="flex items-center gap-3 p-4 bg-card border border-border rounded-lg">
               <Calendar className="w-5 h-5 text-primary shrink-0" />
               <div>
