@@ -176,13 +176,13 @@ const PropertyDetail = () => {
                   </div>
                 </div>
               )}
-              {property.acceptance_end_at && (
+              {(property.acceptance_end_at || property.acceptance_start_at) && (
                 <div className="flex items-center gap-3 p-4 bg-card border border-border rounded-lg">
                   <Calendar className="w-5 h-5 text-primary shrink-0" />
                   <div>
                     <span className="text-xs text-muted-foreground font-body block">Thời gian kết thúc nhận hồ sơ</span>
                     <span className="font-body font-medium text-sm">
-                      {formatDateDisplay(property.acceptance_end_at, true)}
+                      {formatDateDisplay(property.acceptance_end_at || property.acceptance_start_at, true)}
                     </span>
                   </div>
                 </div>

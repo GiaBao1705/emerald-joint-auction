@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Building2, Car, Home, Landmark, MapPin, TreePine, Search, Package } from "lucide-react";
+import { Building2, Car, Home, Landmark, MapPin, TreePine, Search, Package, Calendar } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams } from "react-router-dom";
@@ -143,6 +143,9 @@ const FeaturedLots = () => {
                             <div className="flex flex-wrap gap-3 text-sm text-muted-foreground font-body mb-4">
                               {item.location && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{item.location}</span>}
                               {item.property_type && <span className="px-2 py-0.5 bg-secondary rounded text-xs">{item.property_type}</span>}
+                              {(item.acceptance_end_at || item.acceptance_start_at) && (
+                                <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatDateDisplay(item.acceptance_end_at || item.acceptance_start_at, true)}</span>
+                              )}
                               {item.area && <span className="text-xs">{item.area}</span>}
                             </div>
                             {item.description && <p className="text-sm text-muted-foreground font-body mb-4 line-clamp-2">{item.description}</p>}
