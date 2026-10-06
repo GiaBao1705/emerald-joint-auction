@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { formatDateDisplay } from "@/lib/utils";
+import { getEffectivePropertyStatus } from "@/lib/property-status";
 import { ArrowLeft, Calendar, FileText, MapPin, Ruler, ChevronLeft, ChevronRight } from "lucide-react";
 
 const PropertyDetail = () => {
@@ -36,6 +37,10 @@ const PropertyDetail = () => {
     ...(property?.image_url ? [{ image_url: property.image_url, id: "main" }] : []),
     ...(galleryImages || []),
   ];
+  const effectiveStatus = getEffectivePropertyStatus(
+    property?.status,
+    property?.acceptance_end_at || property?.acceptance_start_at,
+  );
 
   if (isLoading) {
     return (
@@ -124,10 +129,10 @@ const PropertyDetail = () => {
         <div className="flex items-start justify-between flex-wrap gap-4 mb-6">
           <h1 className="text-2xl md:text-4xl font-display font-700 text-foreground">{property.name}</h1>
           <span className={`text-sm font-body font-semibold px-4 py-1.5 rounded-full ${
-            property.status === "Đang nhận hồ sơ" ? "bg-green-brand/15 text-green-brand"
-            : property.status === "Sắp diễn ra" ? "bg-accent/15 text-accent"
+            effectiveStatus === "Đang nhận hồ sơ" ? "bg-green-brand/15 text-green-brand"
+            : effectiveStatus === "Sắp diễn ra" ? "bg-accent/15 text-accent"
             : "bg-muted text-muted-foreground"
-          }`}>{property.status}</span>
+          }`}>{effectiveStatus}</span>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4 mb-8">
@@ -158,7 +163,7 @@ const PropertyDetail = () => {
               </div>
             </div>
           )}
-          {property.status === "Đang nhận hồ sơ" && (
+          {effectiveStatus === "Đang nhận hồ sơ" && (
             <>
               {property.sale_start_at && (
                 <div className="flex items-center gap-3 p-4 bg-card border border-border rounded-lg">
@@ -171,13 +176,13 @@ const PropertyDetail = () => {
                   </div>
                 </div>
               )}
-              {property.acceptance_start_at && (
+              {property.acceptance_end_at && (
                 <div className="flex items-center gap-3 p-4 bg-card border border-border rounded-lg">
                   <Calendar className="w-5 h-5 text-primary shrink-0" />
                   <div>
-                    <span className="text-xs text-muted-foreground font-body block">Thời gian tiếp nhận hồ sơ</span>
+                    <span className="text-xs text-muted-foreground font-body block">Thời gian kết thúc nhận hồ sơ</span>
                     <span className="font-body font-medium text-sm">
-                      {formatDateDisplay(property.acceptance_start_at, true)}
+                      {formatDateDisplay(property.acceptance_end_at, true)}
                     </span>
                   </div>
                 </div>

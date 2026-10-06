@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams } from "react-router-dom";
 import { formatDateDisplay } from "@/lib/utils";
+import { getEffectivePropertyStatus } from "@/lib/property-status";
 
 const PROPERTY_CATEGORIES = ["Bất động sản", "Động sản", "Tài sản khác"] as const;
 
@@ -115,6 +116,7 @@ const FeaturedLots = () => {
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-7">
                     {items.map((item, i) => {
                       const Icon = iconMap[item.property_type || ""] || Home;
+                      const status = getEffectivePropertyStatus(item.status, item.acceptance_end_at ?? item.acceptance_start_at);
                       return (
                         <motion.a href={`/property/${item.id}`} key={item.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
                           className="bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group block">
@@ -132,10 +134,10 @@ const FeaturedLots = () => {
                                 <Icon className="w-5 h-5 text-primary" />
                               </div>
                               <span className={`text-xs font-body font-semibold px-3 py-1 rounded-full ${
-                                item.status === "Đang nhận hồ sơ" ? "bg-green-brand/15 text-green-brand"
-                                : item.status === "Sắp diễn ra" ? "bg-[#6cb98d]/15 text-[#6cb98d]"
+                                status === "Đang nhận hồ sơ" ? "bg-green-brand/15 text-green-brand"
+                                : status === "Sắp diễn ra" ? "bg-[#6cb98d]/15 text-[#6cb98d]"
                                 : "bg-muted text-muted-foreground"
-                              }`}>{item.status}</span>
+                              }`}>{status}</span>
                             </div>
                             <h3 className="text-lg font-display font-600 mb-3 group-hover:text-[#6cb98d] transition-colors leading-snug">{item.name}</h3>
                             <div className="flex flex-wrap gap-3 text-sm text-muted-foreground font-body mb-4">

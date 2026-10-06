@@ -73,6 +73,7 @@ export type Database = {
       }
       properties: {
         Row: {
+          acceptance_end_at: string | null
           acceptance_start_at: string | null
           area: string | null
           auction_date: string | null
@@ -91,6 +92,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          acceptance_end_at?: string | null
           acceptance_start_at?: string | null
           area?: string | null
           auction_date?: string | null
@@ -109,6 +111,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          acceptance_end_at?: string | null
           acceptance_start_at?: string | null
           area?: string | null
           auction_date?: string | null

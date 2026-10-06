@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { formatDateDisplay } from "@/lib/utils";
+import { formatDateDisplay, toUtcIsoDateTime, toDateTimeLocalValue } from "@/lib/utils";
+import { getEffectivePropertyStatus } from "@/lib/property-status";
 import { Plus, LogOut, FileText, Building2, Video, Trash2, Pencil, Settings, Save, Users, Image } from "lucide-react";
 import PostManager from "./PostManager";
 
@@ -54,8 +55,27 @@ const AdminFull  = () => {
       (supabase.from as any)("recruitments").select("*").order("created_at", { ascending: false }),
       (supabase.from as any)("site_settings").select("*"),
     ]);
+    const propertyRows = p.data || [];
+    const expiredPropertyIds = propertyRows
+      .filter(property => getEffectivePropertyStatus(property.status, property.acceptance_end_at ?? property.acceptance_start_at) === "Đã kết thúc" && property.status !== "Đã kết thúc")
+      .map(property => property.id);
+
+    if (expiredPropertyIds.length > 0) {
+      const { error } = await supabase
+        .from("properties")
+        .update({ status: "Đã kết thúc" })
+        .in("id", expiredPropertyIds);
+
+      if (error) {
+        console.error("Unable to update expired property statuses:", error.message);
+      }
+    }
+
     setposts(a.data || []);
-    setProperties(p.data || []);
+    setProperties(propertyRows.map(property => ({
+      ...property,
+      status: getEffectivePropertyStatus(property.status, property.acceptance_end_at ?? property.acceptance_start_at),
+    })));
     setVideos(v.data || []);
     setRecruitments(r.data || []);
     const map: Record<string, string> = {};
@@ -140,8 +160,10 @@ const AdminFull  = () => {
         documents_url: documentsUrl,
         published: formData.published ?? true,
         auction_date: propertyStatus === "Sắp diễn ra" ? formData.auction_date || null : null,
-        sale_start_at: propertyStatus === "Đang nhận hồ sơ" ? formData.sale_start_at || null : null,
-        acceptance_start_at: propertyStatus === "Đang nhận hồ sơ" ? formData.acceptance_start_at || null : null,
+        sale_start_at: propertyStatus === "Đang nhận hồ sơ" ? toUtcIsoDateTime(formData.sale_start_at) : null,
+        acceptance_end_at: propertyStatus === "Đang nhận hồ sơ"
+          ? toUtcIsoDateTime(formData.acceptance_end_at ?? formData.acceptance_start_at)
+          : null,
       };
 
       const saveProperty = async (finalPayload: typeof payload) => {
@@ -155,12 +177,12 @@ const AdminFull  = () => {
       let result = await saveProperty(payload);
       if (result.error) {
         const message = result.error.message || "";
-        const missingColumn = /sale_start_at|acceptance_start_at/i.test(message) && /column.*does not exist|does not exist/i.test(message);
+        const missingColumn = /sale_start_at|acceptance_end_at/i.test(message) && /column.*does not exist|does not exist/i.test(message);
 
         if (missingColumn) {
           const fallbackPayload = { ...payload };
           delete fallbackPayload.sale_start_at;
-          delete fallbackPayload.acceptance_start_at;
+          delete fallbackPayload.acceptance_end_at;
           result = await saveProperty(fallbackPayload);
         }
       }
@@ -202,7 +224,16 @@ const AdminFull  = () => {
     fetchData();
   };
 
-  const editItem = (item: any) => { setFormData(item); setEditing(item.id); setShowForm(true); };
+  const editItem = (item: any) => {
+    setFormData({
+      ...item,
+      sale_start_at: toDateTimeLocalValue(item.sale_start_at),
+      acceptance_end_at: toDateTimeLocalValue(item.acceptance_end_at ?? item.acceptance_start_at),
+      auction_date: toDateTimeLocalValue(item.auction_date),
+    });
+    setEditing(item.id);
+    setShowForm(true);
+  };
 
   const inputClass = "w-full px-3 py-2.5 bg-card border border-border rounded-md text-foreground font-body text-sm focus:outline-none focus:ring-2 focus:ring-primary";
   const labelClass = "block text-sm font-body font-medium text-foreground/70 mb-1";
@@ -380,17 +411,17 @@ const AdminFull  = () => {
                           <label className={labelClass}>Thời gian bán hồ sơ</label>
                           <input
                             type="datetime-local"
-                            value={formData.sale_start_at ? formData.sale_start_at.slice(0, 16) : ""}
+                            value={formData.sale_start_at ? toDateTimeLocalValue(formData.sale_start_at) : ""}
                             onChange={e => setFormData({ ...formData, sale_start_at: e.target.value })}
                             className={inputClass}
                           />
                         </div>
                         <div>
-                          <label className={labelClass}>Thời gian tiếp nhận hồ sơ</label>
+                          <label className={labelClass}>Thời gian kết thúc nhận hồ sơ</label>
                           <input
                             type="datetime-local"
-                            value={formData.acceptance_start_at ? formData.acceptance_start_at.slice(0, 16) : ""}
-                            onChange={e => setFormData({ ...formData, acceptance_start_at: e.target.value })}
+                            value={formData.acceptance_end_at ? toDateTimeLocalValue(formData.acceptance_end_at) : ""}
+                            onChange={e => setFormData({ ...formData, acceptance_end_at: e.target.value })}
                             className={inputClass}
                           />
                         </div>
@@ -402,7 +433,7 @@ const AdminFull  = () => {
                         <label className={labelClass}>Ngày đấu giá</label>
                         <input
                           type="datetime-local"
-                          value={formData.auction_date ? formData.auction_date.slice(0, 16) : ""}
+                          value={formData.auction_date ? toDateTimeLocalValue(formData.auction_date) : ""}
                           onChange={e => setFormData({ ...formData, auction_date: e.target.value })}
                           className={inputClass}
                         />
