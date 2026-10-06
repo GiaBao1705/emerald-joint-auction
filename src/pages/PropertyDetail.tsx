@@ -6,7 +6,24 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { formatDateDisplay } from "@/lib/utils";
 import { getEffectivePropertyStatus } from "@/lib/property-status";
-import { ArrowLeft, Calendar, FileText, MapPin, Ruler, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Calendar, Download, ExternalLink, FileText, MapPin, Ruler, ChevronLeft, ChevronRight } from "lucide-react";
+
+const formatFileSize = (size: number | null | undefined) => {
+  if (size == null) return "";
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${Math.round(size / 1024)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const getDownloadUrl = (fileUrl: string, fileName: string) => {
+  try {
+    const url = new URL(fileUrl);
+    url.searchParams.set("download", fileName);
+    return url.toString();
+  } catch {
+    return fileUrl;
+  }
+};
 
 const PropertyDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -28,6 +45,20 @@ const PropertyDetail = () => {
         .select("*")
         .eq("property_id", id!)
         .order("display_order", { ascending: true });
+      return data || [];
+    },
+    enabled: !!id,
+  });
+
+  const { data: propertyDocuments } = useQuery({
+    queryKey: ["property-documents", id],
+    queryFn: async () => {
+      const { data, error } = await (supabase.from as any)("property_documents")
+        .select("id, name, file_url, mime_type, size_bytes, display_order")
+        .eq("property_id", id!)
+        .order("display_order", { ascending: true })
+        .order("created_at", { ascending: true });
+      if (error) throw error;
       return data || [];
     },
     enabled: !!id,
@@ -215,13 +246,37 @@ const PropertyDetail = () => {
           </div>
         )}
 
-        {property.documents_url && (
+        {(propertyDocuments?.length || property.documents_url) && (
           <div className="mb-8">
             <h2 className="text-xl font-display font-600 mb-4">Hồ sơ tài sản</h2>
-            <a href={property.documents_url} target="_blank" rel="noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-3 bg-primary text-primary-foreground font-body font-semibold rounded-md hover:opacity-90 transition-opacity text-sm">
-              <FileText className="w-4 h-4" /> Tải hồ sơ tài sản
-            </a>
+            <div className="space-y-3">
+              {(propertyDocuments?.length
+                ? propertyDocuments
+                : [{ id: "legacy", name: "Hồ sơ tài sản hiện có", file_url: property.documents_url, mime_type: null, size_bytes: null }]
+              ).map((document: any) => (
+                <div key={document.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-card border border-border rounded-lg">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <FileText className="w-5 h-5 text-primary shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-body font-medium text-sm break-all">{document.name}</p>
+                      {formatFileSize(document.size_bytes) && (
+                        <p className="text-xs text-muted-foreground font-body mt-1">{formatFileSize(document.size_bytes)}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <a href={document.file_url} target="_blank" rel="noreferrer"
+                      className="inline-flex items-center justify-center gap-2 px-3 py-2 border border-border rounded-md text-sm font-body hover:bg-muted transition-colors">
+                      <ExternalLink className="w-4 h-4" /> Xem
+                    </a>
+                    <a href={getDownloadUrl(document.file_url, document.name)} download={document.name}
+                      className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm font-body hover:opacity-90 transition-opacity">
+                      <Download className="w-4 h-4" /> Tải xuống
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

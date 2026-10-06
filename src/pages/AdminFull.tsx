@@ -118,12 +118,6 @@ const AdminFull  = () => {
       if (url) imageUrl = url;
     }
 
-    let documentsUrl = formData.documents_url || null;
-    if (formData.documentsFile) {
-      const url = await uploadFile(formData.documentsFile);
-      if (url) documentsUrl = url;
-    }
-
     let videoUrl = formData.video_url || null;
     if (formData.videoFile) {
       if (!formData.videoFile.type.startsWith("video/")) { alert("Vui lòng chọn file video hợp lệ"); setUploading(false); return; }
@@ -157,7 +151,9 @@ const AdminFull  = () => {
         starting_price: formData.starting_price?.trim() || null,
         status: propertyStatus,
         image_url: imageUrl,
-        documents_url: documentsUrl,
+        documents_url: (formData.documentsToDelete || []).some((documentId: string) =>
+          (formData.propertyDocuments || []).some((document: any) => document.id === documentId && document.file_url === formData.documents_url)
+        ) ? null : formData.documents_url || null,
         published: formData.published ?? true,
         auction_date: propertyStatus === "Sắp diễn ra" ? formData.auction_date || null : null,
         sale_start_at: propertyStatus === "Đang nhận hồ sơ" ? toUtcIsoDateTime(formData.sale_start_at) : null,
@@ -192,6 +188,68 @@ const AdminFull  = () => {
         setUploading(false);
         return;
       }
+      const propertyId = editing || result.data?.[0]?.id;
+      if (!propertyId) {
+        alert("Tài sản đã lưu nhưng không lấy được mã để lưu hồ sơ.");
+        setUploading(false);
+        return;
+      }
+
+      const documentFiles: File[] = formData.documentsFiles || [];
+      if (documentFiles.length > 0) {
+        const uploadedDocuments = await Promise.all(documentFiles.map(async (file, index) => {
+          const url = await uploadFile(file);
+          return url ? {
+            property_id: propertyId,
+            name: file.name,
+            file_url: url,
+            mime_type: file.type || null,
+            size_bytes: file.size,
+            display_order: (formData.propertyDocuments?.length || 0) + index,
+          } : null;
+        }));
+
+        if (uploadedDocuments.some(document => !document)) {
+          alert("Tài sản đã lưu nhưng có hồ sơ tải lên thất bại. Hãy thử tải lại các tệp.");
+          setEditing(propertyId);
+          setUploading(false);
+          return;
+        }
+
+        const { data: savedDocuments, error: documentsError } = await (supabase.from as any)("property_documents")
+          .insert(uploadedDocuments)
+          .select("id, name, file_url, mime_type, size_bytes, display_order");
+        if (documentsError) {
+          alert("Tài sản đã lưu nhưng chưa lưu được danh sách hồ sơ. Hãy chạy migration property_documents trên Supabase.");
+          setEditing(propertyId);
+          setUploading(false);
+          return;
+        }
+        setFormData((current: any) => ({
+          ...current,
+          documentsFiles: [],
+          propertyDocuments: [...(current.propertyDocuments || []), ...(savedDocuments || [])],
+        }));
+      }
+
+      const documentIdsToDelete: string[] = formData.documentsToDelete || [];
+      if (documentIdsToDelete.length > 0) {
+        const { error: deleteDocumentsError } = await (supabase.from as any)("property_documents")
+          .delete()
+          .in("id", documentIdsToDelete)
+          .eq("property_id", propertyId);
+        if (deleteDocumentsError) {
+          alert("Tài sản đã lưu nhưng không xóa được các hồ sơ đã chọn.");
+          setEditing(propertyId);
+          setUploading(false);
+          return;
+        }
+        setFormData((current: any) => ({
+          ...current,
+          documentsToDelete: [],
+          propertyDocuments: (current.propertyDocuments || []).filter((document: any) => !documentIdsToDelete.includes(document.id)),
+        }));
+      }
     } else if (tab === "videos") {
       const payload = { title: formData.title?.trim(), description: formData.description?.trim() || null, video_url: videoUrl, thumbnail_url: thumbnailUrl, published: formData.published };
       const { error } = editing
@@ -224,12 +282,29 @@ const AdminFull  = () => {
     fetchData();
   };
 
-  const editItem = (item: any) => {
+  const editItem = async (item: any) => {
+    let propertyDocuments: any[] = [];
+    if (tab === "properties") {
+      const { data, error } = await (supabase.from as any)("property_documents")
+        .select("id, name, file_url, mime_type, size_bytes, display_order")
+        .eq("property_id", item.id)
+        .order("display_order", { ascending: true })
+        .order("created_at", { ascending: true });
+      if (error) {
+        alert("Không tải được danh sách hồ sơ. Hãy chạy migration property_documents trên Supabase.");
+      } else {
+        propertyDocuments = data || [];
+      }
+    }
+
     setFormData({
       ...item,
       sale_start_at: toDateTimeLocalValue(item.sale_start_at),
       acceptance_end_at: toDateTimeLocalValue(item.acceptance_end_at ?? item.acceptance_start_at),
       auction_date: toDateTimeLocalValue(item.auction_date),
+      propertyDocuments,
+      documentsFiles: [],
+      documentsToDelete: [],
     });
     setEditing(item.id);
     setShowForm(true);
@@ -443,8 +518,55 @@ const AdminFull  = () => {
                   <div><label className={labelClass}>Mô tả</label><textarea value={formData.description || ""} onChange={e => setFormData({ ...formData, description: e.target.value })} className={inputClass + " min-h-[100px]"} maxLength={5000} /></div>
                   <div><label className={labelClass}>Hình ảnh tài sản</label><input type="file" accept="image/*" onChange={e => setFormData({ ...formData, imageFile: e.target.files?.[0] })} className={inputClass} />
                     {formData.image_url && <img src={formData.image_url} alt="" className="mt-2 h-20 rounded object-cover" />}</div>
-                  <div><label className={labelClass}>Hồ sơ tài sản (PDF, Word...)</label><input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={e => setFormData({ ...formData, documentsFile: e.target.files?.[0] })} className={inputClass} />
-                    {formData.documents_url && <a href={formData.documents_url} target="_blank" rel="noreferrer" className="text-sm text-primary underline mt-1 inline-block">Xem hồ sơ hiện tại</a>}</div>
+                  <div className="space-y-3">
+                    <div>
+                      <label className={labelClass}>Hồ sơ tài sản (có thể chọn nhiều tệp)</label>
+                      <input
+                        type="file"
+                        multiple
+                        accept=".pdf,.doc,.docx,.xls,.xlsx"
+                        onChange={e => {
+                          const selectedFiles = Array.from(e.target.files || []);
+                          setFormData({ ...formData, documentsFiles: [...(formData.documentsFiles || []), ...selectedFiles] });
+                          e.target.value = "";
+                        }}
+                        className={inputClass}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">PDF, Word hoặc Excel. Các tệp chỉ tải lên khi bạn lưu tài sản.</p>
+                    </div>
+
+                    {!!formData.documentsFiles?.length && (
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">Tệp chờ tải lên</p>
+                        {formData.documentsFiles.map((file: File, index: number) => (
+                          <div key={`${file.name}-${index}`} className="flex items-center justify-between gap-3 rounded-md border border-border p-3 text-sm">
+                            <span className="min-w-0 truncate">{file.name} <span className="text-muted-foreground">({(file.size / (1024 * 1024)).toFixed(1)} MB)</span></span>
+                            <button type="button" onClick={() => setFormData({ ...formData, documentsFiles: formData.documentsFiles.filter((_: File, fileIndex: number) => fileIndex !== index) })} className="text-destructive hover:opacity-75" aria-label={`Xóa ${file.name}`}>
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {!!formData.propertyDocuments?.filter((document: any) => !(formData.documentsToDelete || []).includes(document.id)).length && (
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">Hồ sơ đã tải lên</p>
+                        {formData.propertyDocuments.filter((document: any) => !(formData.documentsToDelete || []).includes(document.id)).map((document: any) => (
+                          <div key={document.id} className="flex items-center justify-between gap-3 rounded-md border border-border p-3 text-sm">
+                            <a href={document.file_url} target="_blank" rel="noreferrer" className="min-w-0 truncate text-primary underline">{document.name}</a>
+                            <button type="button" onClick={() => setFormData({ ...formData, documentsToDelete: [...(formData.documentsToDelete || []), document.id] })} className="text-destructive hover:opacity-75" aria-label={`Xóa ${document.name}`}>
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {formData.documents_url && !(formData.propertyDocuments || []).some((document: any) => document.file_url === formData.documents_url) && (
+                      <a href={formData.documents_url} target="_blank" rel="noreferrer" className="text-sm text-primary underline inline-block">Xem hồ sơ cũ</a>
+                    )}
+                  </div>
                 </>
               )}
 

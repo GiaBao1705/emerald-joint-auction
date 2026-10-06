@@ -193,6 +193,47 @@ export type Database = {
         }
         Relationships: []
       }
+      property_documents: {
+        Row: {
+          created_at: string
+          display_order: number
+          file_url: string
+          id: string
+          mime_type: string | null
+          name: string
+          property_id: string
+          size_bytes: number | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          file_url: string
+          id?: string
+          mime_type?: string | null
+          name: string
+          property_id: string
+          size_bytes?: number | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          file_url?: string
+          id?: string
+          mime_type?: string | null
+          name?: string
+          property_id?: string
+          size_bytes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_documents_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_settings: {
         Row: {
           created_at: string
