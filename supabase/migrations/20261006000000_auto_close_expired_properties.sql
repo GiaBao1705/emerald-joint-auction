@@ -13,8 +13,7 @@ AS $$
 BEGIN
   UPDATE public.properties AS p
   SET
-    status = 'Đã kết thúc',
-    updated_at = now()
+    status = 'Đã kết thúc'
   WHERE
     p.status = 'Đang nhận hồ sơ'
     AND p.acceptance_end_at IS NOT NULL
