@@ -63,7 +63,7 @@ const FeaturedLots = () => {
         (p.description || "").toLowerCase().includes(q)
       );
     }
-    return result;
+    return [...result].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
   }, [properties, activeCategory, localSearch]);
 
   const visibleProperties = filtered.slice(0, visibleCount);
