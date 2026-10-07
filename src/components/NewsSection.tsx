@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
+import { LoaderCircle } from "lucide-react";
 
-type Post = Database['public']['Tables']['posts']['Row'];
+const PAGE_SIZE = 9;
 
 const categories = [
+  { key: "all", label: "Tất cả" },
   { key: "news", label: "Tin tức" },
   { key: "activity", label: "Hoạt động công ty" },
   { key: "video", label: "Video đấu giá" },
@@ -13,20 +14,35 @@ const categories = [
 ];
 
 const NewsSection = () => {
-  const [active, setActive] = useState("news");
+  const [active, setActive] = useState("all");
 
-  const { data, isLoading } = useQuery({
+  const { data, error, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useInfiniteQuery({
     queryKey: ["posts", active],
-    queryFn: async () => {
-      const { data } = await supabase
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
+      let query = supabase
         .from("posts")
-        .select("*")
-        .eq("category", active)
-        .order("created_at", { ascending: false });
+        .select("*", { count: "exact" });
 
-      return data;
+      if (active !== "all") query = query.eq("category", active);
+
+      const { data: posts, error: queryError, count } = await query
+        .order("created_at", { ascending: false })
+        .range(pageParam, pageParam + PAGE_SIZE - 1);
+
+      if (queryError) throw queryError;
+
+      return {
+        posts: posts || [],
+        totalCount: count || 0,
+        nextPage: posts && count != null && pageParam + posts.length < count ? pageParam + PAGE_SIZE : undefined,
+      };
     },
+    getNextPageParam: (lastPage) => lastPage.nextPage,
   });
+
+  const posts = data?.pages.flatMap((page) => page.posts) || [];
+  const totalCount = data?.pages[0]?.totalCount || 0;
 
   return (
     <section id="news" className="py-24 bg-white">
@@ -45,6 +61,7 @@ const NewsSection = () => {
             <button
               key={cat.key}
               onClick={() => setActive(cat.key)}
+              aria-pressed={active === cat.key}
               className={`px-5 py-2 rounded-full border transition ${
                 active === cat.key
                   ? "bg-primary text-white"
@@ -59,9 +76,14 @@ const NewsSection = () => {
         {/* Content */}
         {isLoading ? (
           <p className="text-center">Đang tải...</p>
+        ) : error && !data ? (
+          <p className="text-center text-destructive">Không tải được danh sách bài viết.</p>
+        ) : posts.length === 0 ? (
+          <p className="text-center text-muted-foreground">Hiện chưa có bài viết trong mục này.</p>
         ) : (
-          <div className="grid md:grid-cols-3 gap-6">
-            {data?.map((item) => (
+          <>
+            <div className="grid md:grid-cols-3 gap-6">
+              {posts.map((item) => (
               <div
                 key={item.id}
                 className="bg-white border rounded-xl overflow-hidden shadow hover:shadow-lg transition"
@@ -82,8 +104,26 @@ const NewsSection = () => {
                   <p className="text-sm text-gray-600 line-clamp-3">{item.content}</p>
                 </div>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+
+            <div className="mt-10 flex flex-col items-center gap-3">
+              <p className="text-sm text-muted-foreground">
+                Đang hiển thị {posts.length} / {totalCount} bài viết
+              </p>
+              {hasNextPage && (
+                <button
+                  type="button"
+                  onClick={() => fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md bg-primary text-primary-foreground font-semibold hover:opacity-90 disabled:opacity-60 transition-opacity"
+                >
+                  {isFetchingNextPage && <LoaderCircle className="w-4 h-4 animate-spin" />}
+                  {isFetchingNextPage ? "Đang tải..." : "Xem thêm bài viết"}
+                </button>
+              )}
+            </div>
+          </>
         )}
       </div>
     </section>
