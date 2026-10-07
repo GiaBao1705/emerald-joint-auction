@@ -135,8 +135,8 @@ const FeaturedLots = () => {
                       const status = getEffectivePropertyStatus(item.status, item.acceptance_end_at ?? item.acceptance_start_at);
                       return (
                         <motion.a href={`/property/${item.id}`} key={item.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
-                          className="bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group block">
-                          <div className="w-full h-[240px] overflow-hidden rounded-t-xl bg-muted">
+                          className="self-start h-fit bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group block">
+                          <div className="w-full h-[160px] sm:h-[190px] overflow-hidden rounded-t-xl bg-muted">
                             <img
                               src={item.image_url || "/placeholder.svg"}
                               alt={item.name}
@@ -144,8 +144,8 @@ const FeaturedLots = () => {
                               onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
                             />
                           </div>
-                          <div className="p-7">
-                            <div className="flex items-start justify-between mb-4">
+                          <div className="p-5">
+                            <div className="flex items-start justify-between mb-3">
                               <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                                 <Icon className="w-5 h-5 text-primary" />
                               </div>
@@ -155,8 +155,8 @@ const FeaturedLots = () => {
                                 : "bg-muted text-muted-foreground"
                               }`}>{status}</span>
                             </div>
-                            <h3 className="text-lg font-display font-600 mb-3 group-hover:text-[#6cb98d] transition-colors leading-snug">{item.name}</h3>
-                            <div className="flex flex-wrap gap-3 text-sm text-muted-foreground font-body mb-4">
+                            <h3 className="text-lg font-display font-600 mb-2 group-hover:text-[#6cb98d] transition-colors leading-snug">{item.name}</h3>
+                            <div className="flex flex-wrap gap-2 text-sm text-muted-foreground font-body mb-3">
                               {item.location && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{item.location}</span>}
                               {item.property_type && <span className="px-2 py-0.5 bg-secondary rounded text-xs">{item.property_type}</span>}
                               {(item.acceptance_end_at || item.acceptance_start_at) && (
@@ -164,8 +164,8 @@ const FeaturedLots = () => {
                               )}
                               {item.area && <span className="text-xs">{item.area}</span>}
                             </div>
-                            {item.description && <p className="text-sm text-muted-foreground font-body mb-4 line-clamp-2">{item.description}</p>}
-                            <div className="flex items-center justify-between pt-4 border-t border-border">
+                            {item.description && <p className="text-sm text-muted-foreground font-body mb-3 line-clamp-2">{item.description}</p>}
+                            <div className="flex items-center justify-between pt-3 border-t border-border">
                               <div>
                                 <span className="text-xs text-muted-foreground font-body block">Giá khởi điểm</span>
                                 <span className="text-xl font-display font-700 text-accent">{item.starting_price || "Liên hệ"}</span>
