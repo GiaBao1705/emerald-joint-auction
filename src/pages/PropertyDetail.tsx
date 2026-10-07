@@ -109,11 +109,11 @@ const PropertyDetail = () => {
         {/* Image Gallery */}
         {allImages.length > 0 && (
           <div className="mb-8">
-            <div className="relative">
+            <div className="relative overflow-hidden rounded-lg bg-white">
               <img
                 src={allImages[currentImage]?.image_url}
                 alt={property.name}
-                className="w-full h-64 md:h-96 object-cover rounded-lg"
+                className="w-full h-64 md:h-96 object-contain"
               />
               {allImages.length > 1 && (
                 <>
