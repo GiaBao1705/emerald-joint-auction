@@ -271,6 +271,9 @@ const AdminFull  = () => {
     }
 
     resetForm();
+    if (tab === "properties") {
+      await queryClient.invalidateQueries({ queryKey: ["property-documents"] });
+    }
     fetchData();
   };
 
