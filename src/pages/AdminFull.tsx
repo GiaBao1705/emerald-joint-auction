@@ -197,11 +197,12 @@ const AdminFull  = () => {
 
       const documentFiles: File[] = formData.documentsFiles || [];
       if (documentFiles.length > 0) {
-        const uploadedDocuments = await Promise.all(documentFiles.map(async (file, index) => {
+        const uploadedDocuments = await Promise.all(documentFiles.map(async (pendingDocument, index) => {
+          const file = pendingDocument.file;
           const url = await uploadFile(file);
           return url ? {
             property_id: propertyId,
-            name: file.name,
+            name: pendingDocument.name.trim() || file.name,
             file_url: url,
             mime_type: file.type || null,
             size_bytes: file.size,
@@ -250,6 +251,25 @@ const AdminFull  = () => {
           propertyDocuments: (current.propertyDocuments || []).filter((document: any) => !documentIdsToDelete.includes(document.id)),
         }));
       }
+
+      const documentsToRename = (formData.propertyDocuments || []).filter((document: any) =>
+        !documentIdsToDelete.includes(document.id) && (document.name.trim() || document.original_name) !== document.original_name
+      );
+      if (documentsToRename.length > 0) {
+        const renameResults = await Promise.all(documentsToRename.map((document: any) =>
+          (supabase.from as any)("property_documents")
+            .update({ name: document.name.trim() || document.original_name })
+            .eq("id", document.id)
+            .eq("property_id", propertyId)
+        ));
+        const renameError = renameResults.find((result: any) => result.error)?.error;
+        if (renameError) {
+          alert("Tài sản đã lưu nhưng chưa cập nhật được tên một số hồ sơ.");
+          setEditing(propertyId);
+          setUploading(false);
+          return;
+        }
+      }
     } else if (tab === "videos") {
       const payload = { title: formData.title?.trim(), description: formData.description?.trim() || null, video_url: videoUrl, thumbnail_url: thumbnailUrl, published: formData.published };
       const { error } = editing
@@ -296,7 +316,7 @@ const AdminFull  = () => {
       if (error) {
         alert("Không tải được danh sách hồ sơ. Hãy chạy migration property_documents trên Supabase.");
       } else {
-        propertyDocuments = data || [];
+        propertyDocuments = (data || []).map((document: any) => ({ ...document, original_name: document.name }));
       }
     }
 
@@ -530,7 +550,8 @@ const AdminFull  = () => {
                         accept=".pdf,.doc,.docx,.xls,.xlsx"
                         onChange={e => {
                           const selectedFiles = Array.from(e.target.files || []);
-                          setFormData({ ...formData, documentsFiles: [...(formData.documentsFiles || []), ...selectedFiles] });
+                          const pendingDocuments = selectedFiles.map(file => ({ file, name: file.name }));
+                          setFormData({ ...formData, documentsFiles: [...(formData.documentsFiles || []), ...pendingDocuments] });
                           e.target.value = "";
                         }}
                         className={inputClass}
@@ -541,10 +562,18 @@ const AdminFull  = () => {
                     {!!formData.documentsFiles?.length && (
                       <div className="space-y-2">
                         <p className="text-sm font-medium">Tệp chờ tải lên</p>
-                        {formData.documentsFiles.map((file: File, index: number) => (
-                          <div key={`${file.name}-${index}`} className="flex items-center justify-between gap-3 rounded-md border border-border p-3 text-sm">
-                            <span className="min-w-0 truncate">{file.name} <span className="text-muted-foreground">({(file.size / (1024 * 1024)).toFixed(1)} MB)</span></span>
-                            <button type="button" onClick={() => setFormData({ ...formData, documentsFiles: formData.documentsFiles.filter((_: File, fileIndex: number) => fileIndex !== index) })} className="text-destructive hover:opacity-75" aria-label={`Xóa ${file.name}`}>
+                        {formData.documentsFiles.map((document: { file: File; name: string }, index: number) => (
+                          <div key={`${document.file.name}-${index}`} className="flex items-center gap-3 rounded-md border border-border p-3 text-sm">
+                            <FileText className="w-4 h-4 shrink-0 text-primary" />
+                            <input
+                              type="text"
+                              value={document.name}
+                              onChange={e => setFormData({ ...formData, documentsFiles: formData.documentsFiles.map((item: { file: File; name: string }, fileIndex: number) => fileIndex === index ? { ...item, name: e.target.value } : item) })}
+                              className={inputClass}
+                              aria-label={`Tên hiển thị cho ${document.file.name}`}
+                            />
+                            <span className="shrink-0 text-xs text-muted-foreground">{(document.file.size / (1024 * 1024)).toFixed(1)} MB</span>
+                            <button type="button" onClick={() => setFormData({ ...formData, documentsFiles: formData.documentsFiles.filter((_: any, fileIndex: number) => fileIndex !== index) })} className="text-destructive hover:opacity-75" aria-label={`Xóa ${document.file.name}`}>
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
@@ -556,8 +585,16 @@ const AdminFull  = () => {
                       <div className="space-y-2">
                         <p className="text-sm font-medium">Hồ sơ đã tải lên</p>
                         {formData.propertyDocuments.filter((document: any) => !(formData.documentsToDelete || []).includes(document.id)).map((document: any) => (
-                          <div key={document.id} className="flex items-center justify-between gap-3 rounded-md border border-border p-3 text-sm">
-                            <a href={document.file_url} target="_blank" rel="noreferrer" className="min-w-0 truncate text-primary underline">{document.name}</a>
+                          <div key={document.id} className="flex items-center gap-3 rounded-md border border-border p-3 text-sm">
+                            <FileText className="w-4 h-4 shrink-0 text-primary" />
+                            <input
+                              type="text"
+                              value={document.name}
+                              onChange={e => setFormData({ ...formData, propertyDocuments: formData.propertyDocuments.map((item: any) => item.id === document.id ? { ...item, name: e.target.value } : item) })}
+                              className={inputClass}
+                              aria-label={`Tên hiển thị cho ${document.name}`}
+                            />
+                            <a href={document.file_url} target="_blank" rel="noreferrer" className="shrink-0 text-primary underline">Mở</a>
                             <button type="button" onClick={() => setFormData({ ...formData, documentsToDelete: [...(formData.documentsToDelete || []), document.id] })} className="text-destructive hover:opacity-75" aria-label={`Xóa ${document.name}`}>
                               <Trash2 className="w-4 h-4" />
                             </button>
