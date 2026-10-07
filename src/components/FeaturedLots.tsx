@@ -8,7 +8,7 @@ import { formatDateDisplay } from "@/lib/utils";
 import { getEffectivePropertyStatus } from "@/lib/property-status";
 
 const PROPERTY_CATEGORIES = ["Bất động sản", "Động sản", "Tài sản khác"] as const;
-const PAGE_SIZE = 9;
+const PAGE_SIZE = 6;
 
 const getAssetCategory = (property: { name: string; property_type: string | null; area: string | null; description: string | null }) => {
   const searchableText = [property.property_type, property.name, property.area, property.description]
