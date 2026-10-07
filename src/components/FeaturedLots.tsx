@@ -8,6 +8,22 @@ import { formatDateDisplay } from "@/lib/utils";
 import { getEffectivePropertyStatus } from "@/lib/property-status";
 
 const PROPERTY_CATEGORIES = ["Bất động sản", "Động sản", "Tài sản khác"] as const;
+const PAGE_SIZE = 9;
+
+const getAssetCategory = (property: { name: string; property_type: string | null; area: string | null; description: string | null }) => {
+  const searchableText = [property.property_type, property.name, property.area, property.description]
+    .filter(Boolean)
+    .join(" ")
+    .toLocaleLowerCase("vi-VN");
+
+  if (["bất động sản", "quyền sử dụng đất", "qsdđ", "thửa đất", "đất nền", "đất nông nghiệp", "nhà ở", "nhà đất", "căn hộ", "m2", "m²"]
+    .some(keyword => searchableText.includes(keyword))) return "Bất động sản";
+
+  if (["động sản", "phương tiện", "xe ô tô", "ô tô", "xe máy", "máy móc", "thiết bị", "tàu thuyền"]
+    .some(keyword => searchableText.includes(keyword))) return "Động sản";
+
+  return "Tài sản khác";
+};
 
 const iconMap: Record<string, any> = {
   "Bất động sản": Home,
@@ -24,6 +40,7 @@ const FeaturedLots = () => {
   const urlSearch = searchParams.get("search") || "";
   const [localSearch, setLocalSearch] = useState(urlSearch);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const { data: properties, isLoading } = useQuery({
     queryKey: ["properties-public"],
@@ -36,7 +53,7 @@ const FeaturedLots = () => {
   const filtered = useMemo(() => {
     if (!properties) return [];
     let result = properties;
-    if (activeCategory) result = result.filter(p => p.property_type === activeCategory);
+    if (activeCategory) result = result.filter(p => getAssetCategory(p) === activeCategory);
     if (localSearch.trim()) {
       const q = localSearch.toLowerCase();
       result = result.filter(p =>
@@ -49,17 +66,14 @@ const FeaturedLots = () => {
     return result;
   }, [properties, activeCategory, localSearch]);
 
+  const visibleProperties = filtered.slice(0, visibleCount);
+
   // Group by category for display
   const groupedByCategory = useMemo(() => {
-    const groups: Record<string, typeof filtered> = {};
-    const items = activeCategory ? filtered : filtered;
-    items.forEach(p => {
-      const cat = p.property_type || "Tài sản khác";
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(p);
-    });
-    return groups;
-  }, [filtered, activeCategory]);
+    return PROPERTY_CATEGORIES
+      .map(category => [category, visibleProperties.filter(property => getAssetCategory(property) === category)] as const)
+      .filter(([, items]) => items.length > 0);
+  }, [visibleProperties]);
 
   return (
     <section id="auctions" className="py-24 bg-white">
@@ -77,18 +91,18 @@ const FeaturedLots = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               value={localSearch}
-              onChange={e => setLocalSearch(e.target.value)}
+              onChange={e => { setLocalSearch(e.target.value); setVisibleCount(PAGE_SIZE); }}
               placeholder="Tìm kiếm theo tên, vị trí..."
               className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
           <div className="flex flex-wrap justify-center gap-2">
-            <button onClick={() => setActiveCategory(null)}
+            <button onClick={() => { setActiveCategory(null); setVisibleCount(PAGE_SIZE); }}
               className={`px-4 py-1.5 rounded-full text-sm font-body font-medium transition-colors ${!activeCategory ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground/70 hover:text-foreground"}`}>
               Tất cả
             </button>
             {PROPERTY_CATEGORIES.map(cat => (
-              <button key={cat} onClick={() => setActiveCategory(cat)}
+              <button key={cat} onClick={() => { setActiveCategory(cat); setVisibleCount(PAGE_SIZE); }}
                 className={`px-4 py-1.5 rounded-full text-sm font-body font-medium transition-colors ${activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground/70 hover:text-foreground"}`}>
                 {cat}
               </button>
@@ -101,9 +115,11 @@ const FeaturedLots = () => {
         ) : !filtered.length ? (
           <p className="text-center text-muted-foreground font-body">Không tìm thấy tài sản phù hợp.</p>
         ) : (
+          <>
           <div className="space-y-12">
-            {Object.entries(groupedByCategory).map(([category, items]) => {
-              const CatIcon = iconMap[category] || Home;
+            {groupedByCategory.map(([category, items]) => {
+              const CatIcon = iconMap[category] || Package;
+              const categoryCount = filtered.filter(property => getAssetCategory(property) === category).length;
               return (
                 <div key={category}>
                   <div className="flex items-center gap-3 mb-6">
@@ -111,11 +127,11 @@ const FeaturedLots = () => {
                       <CatIcon className="w-5 h-5 text-[#6cb98d]" />
                     </div>
                     <h3 className="text-xl font-display font-600 text-foreground">{category}</h3>
-                    <span className="text-sm text-muted-foreground font-body">({items.length})</span>
+                    <span className="text-sm text-muted-foreground font-body">({categoryCount})</span>
                   </div>
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-7">
                     {items.map((item, i) => {
-                      const Icon = iconMap[item.property_type || ""] || Home;
+                      const Icon = iconMap[item.property_type || ""] || iconMap[getAssetCategory(item)] || Home;
                       const status = getEffectivePropertyStatus(item.status, item.acceptance_end_at ?? item.acceptance_start_at);
                       return (
                         <motion.a href={`/property/${item.id}`} key={item.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
@@ -169,6 +185,21 @@ const FeaturedLots = () => {
               );
             })}
           </div>
+          {visibleCount < filtered.length && (
+            <div className="mt-10 flex flex-col items-center gap-2">
+              <p className="text-sm text-muted-foreground font-body">
+                Đang hiển thị {visibleProperties.length} / {filtered.length} tài sản
+              </p>
+              <button
+                type="button"
+                onClick={() => setVisibleCount(count => Math.min(count + PAGE_SIZE, filtered.length))}
+                className="rounded-full bg-primary px-6 py-2.5 text-sm font-body font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Xem thêm tài sản
+              </button>
+            </div>
+          )}
+          </>
         )}
       </div>
     </section>
